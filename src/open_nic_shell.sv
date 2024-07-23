@@ -868,7 +868,8 @@ module open_nic_shell #(
 
     //cmac_subsystem #(
     xxvmac_subsystem #(
-      .CMAC_ID     (i),
+      //.CMAC_ID     (i),
+      .XXVMAC_ID     (i),
       .MIN_PKT_LEN (MIN_PKT_LEN),
       .MAX_PKT_LEN (MAX_PKT_LEN)
     ) cmac_subsystem_inst (
@@ -889,18 +890,31 @@ module open_nic_shell #(
       .s_axil_rresp                 (axil_cmac_rresp[`getvec(2, i)]),
       .s_axil_rready                (axil_cmac_rready[i]),
 
-      .s_axis_cmac_tx_tvalid        (axis_cmac_tx_tvalid[i]),
-      .s_axis_cmac_tx_tdata         (axis_cmac_tx_tdata[`getvec(512, i)]),
-      .s_axis_cmac_tx_tkeep         (axis_cmac_tx_tkeep[`getvec(64, i)]),
-      .s_axis_cmac_tx_tlast         (axis_cmac_tx_tlast[i]),
-      .s_axis_cmac_tx_tuser_err     (axis_cmac_tx_tuser_err[i]),
-      .s_axis_cmac_tx_tready        (axis_cmac_tx_tready[i]),
+      //.s_axis_cmac_tx_tvalid        (axis_cmac_tx_tvalid[i]),
+      //.s_axis_cmac_tx_tdata         (axis_cmac_tx_tdata[`getvec(512, i)]),
+      //.s_axis_cmac_tx_tkeep         (axis_cmac_tx_tkeep[`getvec(64, i)]),
+      //.s_axis_cmac_tx_tlast         (axis_cmac_tx_tlast[i]),
+      //.s_axis_cmac_tx_tuser_err     (axis_cmac_tx_tuser_err[i]),
+      //.s_axis_cmac_tx_tready        (axis_cmac_tx_tready[i]),
 
-      .m_axis_cmac_rx_tvalid        (axis_cmac_rx_tvalid[i]),
-      .m_axis_cmac_rx_tdata         (axis_cmac_rx_tdata[`getvec(512, i)]),
-      .m_axis_cmac_rx_tkeep         (axis_cmac_rx_tkeep[`getvec(64, i)]),
-      .m_axis_cmac_rx_tlast         (axis_cmac_rx_tlast[i]),
-      .m_axis_cmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
+      //.m_axis_cmac_rx_tvalid        (axis_cmac_rx_tvalid[i]),
+      //.m_axis_cmac_rx_tdata         (axis_cmac_rx_tdata[`getvec(512, i)]),
+      //.m_axis_cmac_rx_tkeep         (axis_cmac_rx_tkeep[`getvec(64, i)]),
+      //.m_axis_cmac_rx_tlast         (axis_cmac_rx_tlast[i]),
+      //.m_axis_cmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
+
+      .s_axis_xxvmac_tx_tvalid        (axis_cmac_tx_tvalid[i]),
+      .s_axis_xxvmac_tx_tdata         (axis_cmac_tx_tdata[`getvec(512, i)]),
+      .s_axis_xxvmac_tx_tkeep         (axis_cmac_tx_tkeep[`getvec(64, i)]),
+      .s_axis_xxvmac_tx_tlast         (axis_cmac_tx_tlast[i]),
+      .s_axis_xxvmac_tx_tuser_err     (axis_cmac_tx_tuser_err[i]),
+      .s_axis_xxvmac_tx_tready        (axis_cmac_tx_tready[i]),
+
+      .m_axis_xxvmac_rx_tvalid        (axis_cmac_rx_tvalid[i]),
+      .m_axis_xxvmac_rx_tdata         (axis_cmac_rx_tdata[`getvec(512, i)]),
+      .m_axis_xxvmac_rx_tkeep         (axis_cmac_rx_tkeep[`getvec(64, i)]),
+      .m_axis_xxvmac_rx_tlast         (axis_cmac_rx_tlast[i]),
+      .m_axis_xxvmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
 
 `ifdef __synthesis__
       .gt_rxp                       (qsfp_rxp[`getvec(4, i)]),
@@ -917,7 +931,8 @@ module open_nic_shell #(
       .dual1_gt_ref_clk_n           (dual1_gt_ref_clk_n),
 `endif
 
-      .cmac_clk                     (cmac_clk[i]),
+      //.cmac_clk                     (cmac_clk[i]),
+      .xxvmac_clk                     (cmac_clk[i]),
 `else
       .m_axis_cmac_tx_sim_tvalid    (m_axis_cmac_tx_sim_tvalid[i]),
       .m_axis_cmac_tx_sim_tdata     (m_axis_cmac_tx_sim_tdata[`getvec(512, i)]),

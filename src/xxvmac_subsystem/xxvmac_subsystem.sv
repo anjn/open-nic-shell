@@ -58,6 +58,7 @@ module xxvmac_subsystem #(
   input          gt_refclk_p,
   input          gt_refclk_n,
 
+  output         xxvmac_clk,
   input          mod_rstn,
   output         mod_rst_done,
   input          axil_aclk
