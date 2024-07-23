@@ -866,7 +866,8 @@ module open_nic_shell #(
       .cmac_clk             (cmac_clk[i])
     );
 
-    cmac_subsystem #(
+    //cmac_subsystem #(
+    xxvmac_subsystem #(
       .CMAC_ID     (i),
       .MIN_PKT_LEN (MIN_PKT_LEN),
       .MAX_PKT_LEN (MAX_PKT_LEN)
