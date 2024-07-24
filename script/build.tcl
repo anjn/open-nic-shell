@@ -302,6 +302,7 @@ dict for {module module_dir} $module_dict {
         } elseif {[file exists "${ip_tcl_dir}/${ip}.tcl"]} {
             source ${ip_tcl_dir}/${ip}.tcl
         } else {
+            puts "INFO: \[$ip\] No IP scripts found. ${ip_tcl_dir}/${ip}.tcl"
             continue
         }
 

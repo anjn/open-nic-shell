@@ -97,14 +97,14 @@ module xxvmac_subsystem_xxvmac_wrapper #(
     .aresetn       (aresetn),
 
     .s_axis_tvalid (axis_rx_tvalid),
-    .s_axis_tready (axis_rx_tready),
+    .s_axis_tready (),
     .s_axis_tdata  (axis_rx_tdata),
     .s_axis_tkeep  (axis_rx_tkeep),
     .s_axis_tlast  (axis_rx_tlast),
     .s_axis_tuser  ({ 7'b0, axis_rx_tuser_err }),
 
     .m_axis_tvalid (m_axis_rx_tvalid),
-    .m_axis_tready (m_axis_rx_tready),
+    .m_axis_tready (1'b1),
     .m_axis_tdata  (m_axis_rx_tdata),
     .m_axis_tkeep  (m_axis_rx_tkeep),
     .m_axis_tlast  (m_axis_rx_tlast),
