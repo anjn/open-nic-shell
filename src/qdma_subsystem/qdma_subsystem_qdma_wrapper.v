@@ -18,6 +18,7 @@
 // This module wraps up the QDMA IP.  It creates two clock domains: one for the
 // data path running at 250MHz, and the other for the AXI-Lite register
 // interface running at 125MHz.
+`include "open_nic_shell_macros.vh"
 `timescale 1ns/1ps
 module qdma_subsystem_qdma_wrapper #(
   parameter integer QDMA_ID = 0

@@ -159,20 +159,38 @@ module open_nic_shell #(
   output     [NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_no_wrb_marker,
   input      [NUM_QDMA-1:0] m_axis_qdma_cpl_sim_tready,
 
-  output     [NUM_CMAC_PORT-1:0] m_axis_cmac_tx_sim_tvalid,
-  output [512*NUM_CMAC_PORT-1:0] m_axis_cmac_tx_sim_tdata,
-  output  [64*NUM_CMAC_PORT-1:0] m_axis_cmac_tx_sim_tkeep,
-  output     [NUM_CMAC_PORT-1:0] m_axis_cmac_tx_sim_tlast,
-  output     [NUM_CMAC_PORT-1:0] m_axis_cmac_tx_sim_tuser_err,
-  input      [NUM_CMAC_PORT-1:0] m_axis_cmac_tx_sim_tready,
+  output     [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tvalid,
+  output [512*NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tdata,
+  output  [64*NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tkeep,
+  output     [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tlast,
+  output     [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tuser_err,
+  input      [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tready,
 
-  input      [NUM_CMAC_PORT-1:0] s_axis_cmac_rx_sim_tvalid,
-  input  [512*NUM_CMAC_PORT-1:0] s_axis_cmac_rx_sim_tdata,
-  input   [64*NUM_CMAC_PORT-1:0] s_axis_cmac_rx_sim_tkeep,
-  input      [NUM_CMAC_PORT-1:0] s_axis_cmac_rx_sim_tlast,
-  input      [NUM_CMAC_PORT-1:0] s_axis_cmac_rx_sim_tuser_err,
+  input      [NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tvalid,
+  input  [512*NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tdata,
+  input   [64*NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tkeep,
+  input      [NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tlast,
+  input      [NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tuser_err,
 
-  input  [NUM_QDMA-1:0] powerup_rstn
+  input  [NUM_QDMA-1:0] powerup_rstn,
+
+  input     [16*NUM_QDMA-1:0] pcie_rxp,
+  input     [16*NUM_QDMA-1:0] pcie_rxn,
+  output    [16*NUM_QDMA-1:0] pcie_txp,
+  output    [16*NUM_QDMA-1:0] pcie_txn,
+
+  input    [NUM_QSFP_GT-1:0] qsfp_rxp,
+  input    [NUM_QSFP_GT-1:0] qsfp_rxn,
+  output   [NUM_QSFP_GT-1:0] qsfp_txp,
+  output   [NUM_QSFP_GT-1:0] qsfp_txn,
+
+  input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_p,
+  input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_n,
+
+  input                          satellite_uart_0_rxd,
+  output                         satellite_uart_0_txd,
+  output                         hbm_cattrip,
+  input                    [3:0] satellite_gpio
 `endif
 );
 
@@ -1011,7 +1029,6 @@ module open_nic_shell #(
       .m_axis_xxvmac_rx_tlast         (axis_cmac_rx_tlast[i]),
       .m_axis_xxvmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
 
-`ifdef __synthesis__
       .gt_rxp                       (qsfp_rxp[i * 4 +: NUM_PORT_PER_CORE]),
       .gt_rxn                       (qsfp_rxn[i * 4 +: NUM_PORT_PER_CORE]),
       .gt_txp                       (qsfp_txp[i * 4 +: NUM_PORT_PER_CORE]),
@@ -1019,31 +1036,7 @@ module open_nic_shell #(
       .gt_refclk_p                  (qsfp_refclk_p[i]),
       .gt_refclk_n                  (qsfp_refclk_n[i]),
 
-`ifdef __au45n__
-      .dual0_gt_ref_clk_p           (dual0_gt_ref_clk_p),
-      .dual0_gt_ref_clk_n           (dual0_gt_ref_clk_n),
-      .dual1_gt_ref_clk_p           (dual1_gt_ref_clk_p),
-      .dual1_gt_ref_clk_n           (dual1_gt_ref_clk_n),
-`endif
-
-      //.cmac_clk                     (cmac_clk[i]),
       .xxvmac_clk                     (cmac_clk[i * 4 +: NUM_PORT_PER_CORE]),
-`else
-      .m_axis_cmac_tx_sim_tvalid    (m_axis_cmac_tx_sim_tvalid[i]),
-      .m_axis_cmac_tx_sim_tdata     (m_axis_cmac_tx_sim_tdata[`getvec(512, i)]),
-      .m_axis_cmac_tx_sim_tkeep     (m_axis_cmac_tx_sim_tkeep[`getvec(64, i)]),
-      .m_axis_cmac_tx_sim_tlast     (m_axis_cmac_tx_sim_tlast[i]),
-      .m_axis_cmac_tx_sim_tuser_err (m_axis_cmac_tx_sim_tuser_err[i]),
-      .m_axis_cmac_tx_sim_tready    (m_axis_cmac_tx_sim_tready[i]),
-
-      .s_axis_cmac_rx_sim_tvalid    (s_axis_cmac_rx_sim_tvalid[i]),
-      .s_axis_cmac_rx_sim_tdata     (s_axis_cmac_rx_sim_tdata[`getvec(512, i)]),
-      .s_axis_cmac_rx_sim_tkeep     (s_axis_cmac_rx_sim_tkeep[`getvec(64, i)]),
-      .s_axis_cmac_rx_sim_tlast     (s_axis_cmac_rx_sim_tlast[i]),
-      .s_axis_cmac_rx_sim_tuser_err (s_axis_cmac_rx_sim_tuser_err[i]),
-
-      .cmac_clk                     (cmac_clk[i]),
-`endif
 
       .mod_rstn                     (cmac_rstn[i]),
       .mod_rst_done                 (cmac_rst_done[i]),

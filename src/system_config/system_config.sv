@@ -691,6 +691,7 @@ axi_lite_clock_converter axi_clock_conv_cms_inst (
       .m_axi_aresetn (cms_aresetn)
     );
 
+`ifdef __synthesis__
 cms_subsystem_wrapper
   cms_subsystem_wrapper_inst (
     .aclk_ctrl_0             (cms_clk),
@@ -751,5 +752,6 @@ cms_subsystem_wrapper
     .satellite_uart_0_rxd    (satellite_uart_0_rxd),
     .satellite_uart_0_txd    (satellite_uart_0_txd)
   );
+`endif
 
 endmodule: system_config

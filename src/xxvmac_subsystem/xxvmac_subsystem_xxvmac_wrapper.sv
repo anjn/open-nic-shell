@@ -94,14 +94,14 @@ module xxvmac_subsystem_xxvmac_wrapper #(
   // RX FIFO
   wire  [63:0] m_axis_rx_tuser;
 
-  assign m_axis_rx_tuser_err = |{
+  assign m_axis_rx_tuser_err = &{
     m_axis_rx_tuser[ 0], m_axis_rx_tuser[ 8], m_axis_rx_tuser[16], m_axis_rx_tuser[24],
     m_axis_rx_tuser[32], m_axis_rx_tuser[40], m_axis_rx_tuser[48], m_axis_rx_tuser[56]
   };
 
   xxvmac_subsystem_axis_dwidth_converter_rx dwidth_conv_rx_inst (
     .aclk          (xxvmac_clk[0]),
-    .aresetn       (user_rx_reset_0),
+    .aresetn       (~user_rx_reset_0),
 
     .s_axis_tvalid (axis_rx_tvalid),
     .s_axis_tready (),
@@ -124,7 +124,7 @@ module xxvmac_subsystem_xxvmac_wrapper #(
 
   xxvmac_subsystem_axis_dwidth_converter_tx dwidth_conv_tx_inst (
     .aclk          (xxvmac_clk[0]),
-    .aresetn       (user_tx_reset_0),
+    .aresetn       (~user_tx_reset_0),
 
     .s_axis_tvalid (s_axis_tx_tvalid),
     .s_axis_tready (s_axis_tx_tready),
@@ -202,7 +202,7 @@ module xxvmac_subsystem_xxvmac_wrapper #(
       .qpllreset_in_0                   (1'b0),
 
       .s_axi_aclk_0                     (axil_aclk),
-      .s_axi_aresetn_0                  (xxvmac_sys_reset),
+      .s_axi_aresetn_0                  (~xxvmac_sys_reset),
 
       .s_axi_awaddr_0                   (s_axil_awaddr),
       .s_axi_awvalid_0                  (s_axil_awvalid),
