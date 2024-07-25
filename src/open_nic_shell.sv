@@ -25,7 +25,14 @@ module open_nic_shell #(
   parameter int    NUM_PHYS_FUNC   = 1,
   parameter int    NUM_QUEUE       = 512,
   parameter int    NUM_QDMA        = 1,
-  parameter int    NUM_CMAC_PORT   = 1
+  parameter int    NUM_CMAC_PORT   = 0,
+  parameter int    NUM_CMAC_CORE   = NUM_CMAC_PORT,
+  parameter int    NUM_XXVMAC_PORT = 1,
+  parameter int    NUM_XXVMAC_CORE = (NUM_XXVMAC_PORT + 3) / 4,
+  parameter int    NUM_MAC_STREAM  = NUM_CMAC_PORT + NUM_XXVMAC_PORT,
+  parameter int    NUM_MAC_CORE    = NUM_CMAC_CORE + NUM_XXVMAC_CORE,
+  parameter int    NUM_QSFP_GT     = NUM_CMAC_PORT * 4 + NUM_XXVMAC_PORT,
+  parameter int    NUM_QSFP_GT_REF = (NUM_QSFP_GT + 3) / 4
 ) (
 `ifdef __synthesis__
 
@@ -79,10 +86,10 @@ module open_nic_shell #(
   input        [NUM_QDMA-1:0] pcie_refclk_n,
   input        [NUM_QDMA-1:0] pcie_rstn,
 
-  input    [4*NUM_CMAC_PORT-1:0] qsfp_rxp,
-  input    [4*NUM_CMAC_PORT-1:0] qsfp_rxn,
-  output   [4*NUM_CMAC_PORT-1:0] qsfp_txp,
-  output   [4*NUM_CMAC_PORT-1:0] qsfp_txn,
+  input    [NUM_QSFP_GT-1:0] qsfp_rxp,
+  input    [NUM_QSFP_GT-1:0] qsfp_rxn,
+  output   [NUM_QSFP_GT-1:0] qsfp_txp,
+  output   [NUM_QSFP_GT-1:0] qsfp_txn,
 
 `ifdef __au45n__
   input                          dual0_gt_ref_clk_p,
@@ -91,8 +98,8 @@ module open_nic_shell #(
   input                          dual1_gt_ref_clk_n,
 `endif
 
-  input      [NUM_CMAC_PORT-1:0] qsfp_refclk_p,
-  input      [NUM_CMAC_PORT-1:0] qsfp_refclk_n
+  input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_p,
+  input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_n
 
 `else // !`ifdef __synthesis__
   input     [NUM_QDMA-1:0] s_axil_sim_awvalid,
@@ -191,8 +198,14 @@ module open_nic_shell #(
         $fatal("[%m] Number of QDMA should be within the range [1, 2]");
       end
     end
-    if (NUM_CMAC_PORT > 2 || NUM_CMAC_PORT < 1) begin
-      $fatal("[%m] Number of CMACs should be within the range [1, 2]");
+    if (NUM_CMAC_PORT > 2 || NUM_CMAC_PORT < 0) begin
+      $fatal("[%m] Number of CMACs should be within the range [0, 2]");
+    end
+    if (NUM_XXVMAC_PORT > 1 || NUM_XXVMAC_PORT < 0) begin
+      $fatal("[%m] Number of XXVMACs should be within the range [0, 1]");
+    end
+    if (NUM_QSFP_GT > 8 || NUM_QSFP_GT < 1) begin
+      $fatal("[%m] Number of QSFP GTs should be within the range [0, 8]");
     end
   end
 
@@ -273,39 +286,39 @@ module open_nic_shell #(
   wire     [2*NUM_QDMA-1:0] axil_qdma_rresp;
   wire       [NUM_QDMA-1:0] axil_qdma_rready;
 
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_awvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_adap_awaddr;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_awready;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_wvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_adap_wdata;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_wready;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_bvalid;
-  wire   [2*NUM_CMAC_PORT-1:0] axil_adap_bresp;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_bready;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_arvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_adap_araddr;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_arready;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_rvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_adap_rdata;
-  wire   [2*NUM_CMAC_PORT-1:0] axil_adap_rresp;
-  wire     [NUM_CMAC_PORT-1:0] axil_adap_rready;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_awvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_adap_awaddr;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_awready;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_wvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_adap_wdata;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_wready;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_bvalid;
+  wire   [2*NUM_MAC_CORE-1:0] axil_adap_bresp;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_bready;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_arvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_adap_araddr;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_arready;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_rvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_adap_rdata;
+  wire   [2*NUM_MAC_CORE-1:0] axil_adap_rresp;
+  wire     [NUM_MAC_CORE-1:0] axil_adap_rready;
 
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_awvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_cmac_awaddr;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_awready;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_wvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_cmac_wdata;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_wready;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_bvalid;
-  wire   [2*NUM_CMAC_PORT-1:0] axil_cmac_bresp;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_bready;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_arvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_cmac_araddr;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_arready;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_rvalid;
-  wire  [32*NUM_CMAC_PORT-1:0] axil_cmac_rdata;
-  wire   [2*NUM_CMAC_PORT-1:0] axil_cmac_rresp;
-  wire     [NUM_CMAC_PORT-1:0] axil_cmac_rready;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_awvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_cmac_awaddr;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_awready;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_wvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_cmac_wdata;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_wready;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_bvalid;
+  wire   [2*NUM_MAC_CORE-1:0] axil_cmac_bresp;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_bready;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_arvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_cmac_araddr;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_arready;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_rvalid;
+  wire  [32*NUM_MAC_CORE-1:0] axil_cmac_rdata;
+  wire   [2*NUM_MAC_CORE-1:0] axil_cmac_rresp;
+  wire     [NUM_MAC_CORE-1:0] axil_cmac_rready;
 
   wire                         axil_box0_awvalid;
   wire                  [31:0] axil_box0_awaddr;
@@ -361,60 +374,60 @@ module open_nic_shell #(
   wire     [NUM_PHYS_FUNC*NUM_QDMA-1:0] axis_qdma_c2h_tready;
 
   // Packet adapter interfaces to the box running at 250MHz
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tvalid;
-  wire [512*NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tdata;
-  wire  [64*NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tkeep;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tlast;
-  wire  [16*NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tuser_size;
-  wire  [16*NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tuser_src;
-  wire  [16*NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tuser_dst;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_tx_250mhz_tready;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tvalid;
+  wire [512*NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tdata;
+  wire  [64*NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tkeep;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tlast;
+  wire  [16*NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tuser_size;
+  wire  [16*NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tuser_src;
+  wire  [16*NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tuser_dst;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_tx_250mhz_tready;
 
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tvalid;
-  wire [512*NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tdata;
-  wire  [64*NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tkeep;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tlast;
-  wire  [16*NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tuser_size;
-  wire  [16*NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tuser_src;
-  wire  [16*NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tuser_dst;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_rx_250mhz_tready;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tvalid;
+  wire [512*NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tdata;
+  wire  [64*NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tkeep;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tlast;
+  wire  [16*NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tuser_size;
+  wire  [16*NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tuser_src;
+  wire  [16*NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tuser_dst;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_rx_250mhz_tready;
 
   // Packet adapter interfaces to the box running at 322MHz
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_tx_322mhz_tvalid;
-  wire [512*NUM_CMAC_PORT-1:0] axis_adap_tx_322mhz_tdata;
-  wire  [64*NUM_CMAC_PORT-1:0] axis_adap_tx_322mhz_tkeep;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_tx_322mhz_tlast;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_tx_322mhz_tuser_err;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_tx_322mhz_tready;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_tx_322mhz_tvalid;
+  wire [512*NUM_MAC_STREAM-1:0] axis_adap_tx_322mhz_tdata;
+  wire  [64*NUM_MAC_STREAM-1:0] axis_adap_tx_322mhz_tkeep;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_tx_322mhz_tlast;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_tx_322mhz_tuser_err;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_tx_322mhz_tready;
 
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_rx_322mhz_tvalid;
-  wire [512*NUM_CMAC_PORT-1:0] axis_adap_rx_322mhz_tdata;
-  wire  [64*NUM_CMAC_PORT-1:0] axis_adap_rx_322mhz_tkeep;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_rx_322mhz_tlast;
-  wire     [NUM_CMAC_PORT-1:0] axis_adap_rx_322mhz_tuser_err;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_rx_322mhz_tvalid;
+  wire [512*NUM_MAC_STREAM-1:0] axis_adap_rx_322mhz_tdata;
+  wire  [64*NUM_MAC_STREAM-1:0] axis_adap_rx_322mhz_tkeep;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_rx_322mhz_tlast;
+  wire     [NUM_MAC_STREAM-1:0] axis_adap_rx_322mhz_tuser_err;
 
   // CMAC subsystem interfaces to the box running at 322MHz
-  wire     [NUM_CMAC_PORT-1:0] axis_cmac_tx_tvalid;
-  wire [512*NUM_CMAC_PORT-1:0] axis_cmac_tx_tdata;
-  wire  [64*NUM_CMAC_PORT-1:0] axis_cmac_tx_tkeep;
-  wire     [NUM_CMAC_PORT-1:0] axis_cmac_tx_tlast;
-  wire     [NUM_CMAC_PORT-1:0] axis_cmac_tx_tuser_err;
-  wire     [NUM_CMAC_PORT-1:0] axis_cmac_tx_tready;
+  wire     [NUM_MAC_STREAM-1:0] axis_cmac_tx_tvalid;
+  wire [512*NUM_MAC_STREAM-1:0] axis_cmac_tx_tdata;
+  wire  [64*NUM_MAC_STREAM-1:0] axis_cmac_tx_tkeep;
+  wire     [NUM_MAC_STREAM-1:0] axis_cmac_tx_tlast;
+  wire     [NUM_MAC_STREAM-1:0] axis_cmac_tx_tuser_err;
+  wire     [NUM_MAC_STREAM-1:0] axis_cmac_tx_tready;
 
-  wire     [NUM_CMAC_PORT-1:0] axis_cmac_rx_tvalid;
-  wire [512*NUM_CMAC_PORT-1:0] axis_cmac_rx_tdata;
-  wire  [64*NUM_CMAC_PORT-1:0] axis_cmac_rx_tkeep;
-  wire     [NUM_CMAC_PORT-1:0] axis_cmac_rx_tlast;
-  wire     [NUM_CMAC_PORT-1:0] axis_cmac_rx_tuser_err;
+  wire     [NUM_MAC_STREAM-1:0] axis_cmac_rx_tvalid;
+  wire [512*NUM_MAC_STREAM-1:0] axis_cmac_rx_tdata;
+  wire  [64*NUM_MAC_STREAM-1:0] axis_cmac_rx_tkeep;
+  wire     [NUM_MAC_STREAM-1:0] axis_cmac_rx_tlast;
+  wire     [NUM_MAC_STREAM-1:0] axis_cmac_rx_tuser_err;
 
   wire                  [31:0] shell_rstn;
   wire                  [31:0] shell_rst_done;
   wire          [NUM_QDMA-1:0] qdma_rstn;
   wire          [NUM_QDMA-1:0] qdma_rst_done;
-  wire     [NUM_CMAC_PORT-1:0] adap_rstn;
-  wire     [NUM_CMAC_PORT-1:0] adap_rst_done;
-  wire     [NUM_CMAC_PORT-1:0] cmac_rstn;
-  wire     [NUM_CMAC_PORT-1:0] cmac_rst_done;
+  wire     [NUM_MAC_STREAM-1:0] adap_rstn;
+  wire     [NUM_MAC_STREAM-1:0] adap_rst_done;
+  wire     [NUM_MAC_CORE-1:0] cmac_rstn;
+  wire     [NUM_MAC_CORE-1:0] cmac_rst_done;
 
   wire                  [31:0] user_rstn;
   wire                  [31:0] user_rst_done;
@@ -440,7 +453,7 @@ module open_nic_shell #(
   wire                         ref_clk_100mhz;
 `endif
 
-  wire     [NUM_CMAC_PORT-1:0] cmac_clk;
+  wire     [NUM_MAC_STREAM-1:0] cmac_clk;
 
   // Unused reset pairs must have their "reset_done" tied to 1
 
@@ -451,13 +464,13 @@ module open_nic_shell #(
 
   // For each CMAC port, use the subsequent 4-bit: bit 0 for CMAC subsystem and
   // bit 1 for the corresponding adapter
-  generate for (genvar i = 0; i < NUM_CMAC_PORT; i++) begin: cmac_rst
+  generate for (genvar i = 0; i < NUM_MAC_CORE; i++) begin: cmac_rst
     assign {adap_rstn[i], cmac_rstn[i]} = {shell_rstn[(i+1)*4+1], shell_rstn[(i+1)*4]};
     assign shell_rst_done[(i+1)*4 +: 4] = {2'b11, adap_rst_done[i], cmac_rst_done[i]};
   end: cmac_rst
   endgenerate
 
-  generate for (genvar i = (NUM_CMAC_PORT+1)*4; i < 32; i++) begin: unused_rst
+  generate for (genvar i = (NUM_MAC_CORE+1)*4; i < 32; i++) begin: unused_rst
     assign shell_rst_done[i] = 1'b1;
   end: unused_rst
   endgenerate
@@ -500,7 +513,7 @@ module open_nic_shell #(
   system_config #(
     .BUILD_TIMESTAMP (BUILD_TIMESTAMP),
     .NUM_QDMA        (NUM_QDMA),
-    .NUM_CMAC_PORT   (NUM_CMAC_PORT)
+    .NUM_CMAC_PORT   (NUM_MAC_CORE)
   ) system_config_inst (
 `ifdef __synthesis__
     .s_axil_awvalid      (axil_pcie_awvalid),
@@ -804,7 +817,7 @@ module open_nic_shell #(
   end: qdma_if
   endgenerate
 
-  generate for (genvar i = 0; i < NUM_CMAC_PORT; i++) begin: cmac_port
+  generate for (genvar i = 0; i < NUM_MAC_STREAM; i++) begin: cmac_port
     packet_adapter #(
       .CMAC_ID     (i),
       .MIN_PKT_LEN (MIN_PKT_LEN),
@@ -865,11 +878,92 @@ module open_nic_shell #(
       .axis_aclk            (axis_aclk[0]),
       .cmac_clk             (cmac_clk[i])
     );
+  end: cmac_port
+  endgenerate
 
+  generate for (genvar i = 0; i < NUM_CMAC_CORE; i++) begin: cmac_core
+    cmac_subsystem #(
+      .CMAC_ID     (i),
+      .MIN_PKT_LEN (MIN_PKT_LEN),
+      .MAX_PKT_LEN (MAX_PKT_LEN)
+    ) cmac_subsystem_inst (
+      .s_axil_awvalid               (axil_cmac_awvalid[i]),
+      .s_axil_awaddr                (axil_cmac_awaddr[`getvec(32, i)]),
+      .s_axil_awready               (axil_cmac_awready[i]),
+      .s_axil_wvalid                (axil_cmac_wvalid[i]),
+      .s_axil_wdata                 (axil_cmac_wdata[`getvec(32, i)]),
+      .s_axil_wready                (axil_cmac_wready[i]),
+      .s_axil_bvalid                (axil_cmac_bvalid[i]),
+      .s_axil_bresp                 (axil_cmac_bresp[`getvec(2, i)]),
+      .s_axil_bready                (axil_cmac_bready[i]),
+      .s_axil_arvalid               (axil_cmac_arvalid[i]),
+      .s_axil_araddr                (axil_cmac_araddr[`getvec(32, i)]),
+      .s_axil_arready               (axil_cmac_arready[i]),
+      .s_axil_rvalid                (axil_cmac_rvalid[i]),
+      .s_axil_rdata                 (axil_cmac_rdata[`getvec(32, i)]),
+      .s_axil_rresp                 (axil_cmac_rresp[`getvec(2, i)]),
+      .s_axil_rready                (axil_cmac_rready[i]),
+
+      .s_axis_cmac_tx_tvalid        (axis_cmac_tx_tvalid[i]),
+      .s_axis_cmac_tx_tdata         (axis_cmac_tx_tdata[`getvec(512, i)]),
+      .s_axis_cmac_tx_tkeep         (axis_cmac_tx_tkeep[`getvec(64, i)]),
+      .s_axis_cmac_tx_tlast         (axis_cmac_tx_tlast[i]),
+      .s_axis_cmac_tx_tuser_err     (axis_cmac_tx_tuser_err[i]),
+      .s_axis_cmac_tx_tready        (axis_cmac_tx_tready[i]),
+
+      .m_axis_cmac_rx_tvalid        (axis_cmac_rx_tvalid[i]),
+      .m_axis_cmac_rx_tdata         (axis_cmac_rx_tdata[`getvec(512, i)]),
+      .m_axis_cmac_rx_tkeep         (axis_cmac_rx_tkeep[`getvec(64, i)]),
+      .m_axis_cmac_rx_tlast         (axis_cmac_rx_tlast[i]),
+      .m_axis_cmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
+
+`ifdef __synthesis__
+      .gt_rxp                       (qsfp_rxp[`getvec(4, i)]),
+      .gt_rxn                       (qsfp_rxn[`getvec(4, i)]),
+      .gt_txp                       (qsfp_txp[`getvec(4, i)]),
+      .gt_txn                       (qsfp_txn[`getvec(4, i)]),
+      .gt_refclk_p                  (qsfp_refclk_p[i]),
+      .gt_refclk_n                  (qsfp_refclk_n[i]),
+
+`ifdef __au45n__
+      .dual0_gt_ref_clk_p           (dual0_gt_ref_clk_p),
+      .dual0_gt_ref_clk_n           (dual0_gt_ref_clk_n),
+      .dual1_gt_ref_clk_p           (dual1_gt_ref_clk_p),
+      .dual1_gt_ref_clk_n           (dual1_gt_ref_clk_n),
+`endif
+
+      .cmac_clk                     (cmac_clk[i]),
+`else
+      .m_axis_cmac_tx_sim_tvalid    (m_axis_cmac_tx_sim_tvalid[i]),
+      .m_axis_cmac_tx_sim_tdata     (m_axis_cmac_tx_sim_tdata[`getvec(512, i)]),
+      .m_axis_cmac_tx_sim_tkeep     (m_axis_cmac_tx_sim_tkeep[`getvec(64, i)]),
+      .m_axis_cmac_tx_sim_tlast     (m_axis_cmac_tx_sim_tlast[i]),
+      .m_axis_cmac_tx_sim_tuser_err (m_axis_cmac_tx_sim_tuser_err[i]),
+      .m_axis_cmac_tx_sim_tready    (m_axis_cmac_tx_sim_tready[i]),
+
+      .s_axis_cmac_rx_sim_tvalid    (s_axis_cmac_rx_sim_tvalid[i]),
+      .s_axis_cmac_rx_sim_tdata     (s_axis_cmac_rx_sim_tdata[`getvec(512, i)]),
+      .s_axis_cmac_rx_sim_tkeep     (s_axis_cmac_rx_sim_tkeep[`getvec(64, i)]),
+      .s_axis_cmac_rx_sim_tlast     (s_axis_cmac_rx_sim_tlast[i]),
+      .s_axis_cmac_rx_sim_tuser_err (s_axis_cmac_rx_sim_tuser_err[i]),
+
+      .cmac_clk                     (cmac_clk[i]),
+`endif
+
+      .mod_rstn                     (cmac_rstn[i]),
+      .mod_rst_done                 (cmac_rst_done[i]),
+      .axil_aclk                    (axil_aclk[0])
+    );
+  end: cmac_core
+  endgenerate
+
+  generate for (genvar i = NUM_CMAC_CORE; i < NUM_CMAC_CORE + NUM_XXVMAC_CORE; i++) begin: xxvmac_core
+    localparam int NUM_PORT_PER_CORE = NUM_XXVMAC_PORT - (i - NUM_CMAC_CORE) * 4 < 4 ? NUM_XXVMAC_PORT - (i - NUM_CMAC_CORE) * 4 : 4;
     //cmac_subsystem #(
     xxvmac_subsystem #(
       //.CMAC_ID     (i),
-      .XXVMAC_ID     (i),
+      .XXVMAC_ID   (i),
+      .NUM_PORT    (NUM_PORT_PER_CORE),
       .MIN_PKT_LEN (MIN_PKT_LEN),
       .MAX_PKT_LEN (MAX_PKT_LEN)
     ) cmac_subsystem_inst (
@@ -903,6 +997,7 @@ module open_nic_shell #(
       //.m_axis_cmac_rx_tlast         (axis_cmac_rx_tlast[i]),
       //.m_axis_cmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
 
+      // TODO support multiple ports
       .s_axis_xxvmac_tx_tvalid        (axis_cmac_tx_tvalid[i]),
       .s_axis_xxvmac_tx_tdata         (axis_cmac_tx_tdata[`getvec(512, i)]),
       .s_axis_xxvmac_tx_tkeep         (axis_cmac_tx_tkeep[`getvec(64, i)]),
@@ -917,10 +1012,10 @@ module open_nic_shell #(
       .m_axis_xxvmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
 
 `ifdef __synthesis__
-      .gt_rxp                       (qsfp_rxp[`getvec(4, i)]),
-      .gt_rxn                       (qsfp_rxn[`getvec(4, i)]),
-      .gt_txp                       (qsfp_txp[`getvec(4, i)]),
-      .gt_txn                       (qsfp_txn[`getvec(4, i)]),
+      .gt_rxp                       (qsfp_rxp[i * 4 +: NUM_PORT_PER_CORE]),
+      .gt_rxn                       (qsfp_rxn[i * 4 +: NUM_PORT_PER_CORE]),
+      .gt_txp                       (qsfp_txp[i * 4 +: NUM_PORT_PER_CORE]),
+      .gt_txn                       (qsfp_txn[i * 4 +: NUM_PORT_PER_CORE]),
       .gt_refclk_p                  (qsfp_refclk_p[i]),
       .gt_refclk_n                  (qsfp_refclk_n[i]),
 
@@ -932,7 +1027,7 @@ module open_nic_shell #(
 `endif
 
       //.cmac_clk                     (cmac_clk[i]),
-      .xxvmac_clk                     (cmac_clk[i]),
+      .xxvmac_clk                     (cmac_clk[i * 4 +: NUM_PORT_PER_CORE]),
 `else
       .m_axis_cmac_tx_sim_tvalid    (m_axis_cmac_tx_sim_tvalid[i]),
       .m_axis_cmac_tx_sim_tdata     (m_axis_cmac_tx_sim_tdata[`getvec(512, i)]),
@@ -954,7 +1049,7 @@ module open_nic_shell #(
       .mod_rst_done                 (cmac_rst_done[i]),
       .axil_aclk                    (axil_aclk[0])
     );
-  end: cmac_port
+  end: xxvmac_core
   endgenerate
 
   box_250mhz #(
@@ -963,7 +1058,7 @@ module open_nic_shell #(
     .USE_PHYS_FUNC (USE_PHYS_FUNC),
     .NUM_PHYS_FUNC (NUM_PHYS_FUNC),
     .NUM_QDMA      (NUM_QDMA),
-    .NUM_CMAC_PORT (NUM_CMAC_PORT)
+    .NUM_CMAC_PORT (NUM_MAC_STREAM)
   ) box_250mhz_inst (
     .s_axil_awvalid                   (axil_box0_awvalid),
     .s_axil_awaddr                    (axil_box0_awaddr),
@@ -1041,7 +1136,7 @@ module open_nic_shell #(
   box_322mhz #(
     .MIN_PKT_LEN   (MIN_PKT_LEN),
     .MAX_PKT_LEN   (MAX_PKT_LEN),
-    .NUM_CMAC_PORT (NUM_CMAC_PORT)
+    .NUM_CMAC_PORT (NUM_MAC_STREAM)
   ) box_322mhz_inst (
     .s_axil_awvalid                  (axil_box1_awvalid),
     .s_axil_awaddr                   (axil_box1_awaddr),

@@ -17,59 +17,66 @@
 // *************************************************************************
 `timescale 1ns/1ps
 module xxvmac_subsystem_xxvmac_wrapper #(
-  parameter int XXVMAC_ID = 0
+  parameter int XXVMAC_ID = 0,
+  parameter int NUM_PORT = 0
 ) (
-  input    [0:0] gt_rxp,
-  input    [0:0] gt_rxn,
-  output   [0:0] gt_txp,
-  output   [0:0] gt_txn,
+  input    [NUM_PORT-1:0] gt_rxp,
+  input    [NUM_PORT-1:0] gt_rxn,
+  output   [NUM_PORT-1:0] gt_txp,
+  output   [NUM_PORT-1:0] gt_txn,
 
-  input          s_axil_awvalid,
-  input   [31:0] s_axil_awaddr,
-  output         s_axil_awready,
-  input          s_axil_wvalid,
-  input   [31:0] s_axil_wdata,
-  output         s_axil_wready,
-  output         s_axil_bvalid,
-  output   [1:0] s_axil_bresp,
-  input          s_axil_bready,
-  input          s_axil_arvalid,
-  input   [31:0] s_axil_araddr,
-  output         s_axil_arready,
-  output         s_axil_rvalid,
-  output  [31:0] s_axil_rdata,
-  output   [1:0] s_axil_rresp,
-  input          s_axil_rready,
+  input                   s_axil_awvalid,
+  input            [31:0] s_axil_awaddr,
+  output                  s_axil_awready,
+  input                   s_axil_wvalid,
+  input            [31:0] s_axil_wdata,
+  output                  s_axil_wready,
+  output                  s_axil_bvalid,
+  output            [1:0] s_axil_bresp,
+  input                   s_axil_bready,
+  input                   s_axil_arvalid,
+  input            [31:0] s_axil_araddr,
+  output                  s_axil_arready,
+  output                  s_axil_rvalid,
+  output           [31:0] s_axil_rdata,
+  output            [1:0] s_axil_rresp,
+  input                   s_axil_rready,
 
-  output         m_axis_rx_tvalid,
-  output [511:0] m_axis_rx_tdata,
-  output  [63:0] m_axis_rx_tkeep,
-  output         m_axis_rx_tlast,
-  output         m_axis_rx_tuser_err,
+  output                  m_axis_rx_tvalid,
+  output          [511:0] m_axis_rx_tdata,
+  output           [63:0] m_axis_rx_tkeep,
+  output                  m_axis_rx_tlast,
+  output                  m_axis_rx_tuser_err,
 
-  input          s_axis_tx_tvalid,
-  input  [511:0] s_axis_tx_tdata,
-  input   [63:0] s_axis_tx_tkeep,
-  input          s_axis_tx_tlast,
-  input          s_axis_tx_tuser_err,
-  output         s_axis_tx_tready,
+  input                   s_axis_tx_tvalid,
+  input           [511:0] s_axis_tx_tdata,
+  input            [63:0] s_axis_tx_tkeep,
+  input                   s_axis_tx_tlast,
+  input                   s_axis_tx_tuser_err,
+  output                  s_axis_tx_tready,
 
-  input          gt_refclk_p,
-  input          gt_refclk_n,
-  output         xxvmac_clk,
-  input          xxvmac_sys_reset,
+  input                   gt_refclk_p,
+  input                   gt_refclk_n,
+  output   [NUM_PORT-1:0] xxvmac_clk,
+  input                   xxvmac_sys_reset,
 
-  input          axil_aclk
+  input                   axil_aclk
 );
 
   initial begin
     if (XXVMAC_ID != 0) begin
       $fatal("[%m] Number of xxvmac should be within [1, 1]");
     end
+    if (NUM_PORT != 1) begin
+      $fatal("[%m] Number of xxvmac port per core should be within [1, 1]");
+    end
   end
 
   wire tx_clk_out_0;
-  assign xxvmac_clk = tx_clk_out_0;
+  wire user_rx_reset_0;
+  wire user_tx_reset_0;
+
+  assign xxvmac_clk[0] = tx_clk_out_0;
 
   wire         axis_rx_tvalid;
   wire  [63:0] axis_rx_tdata;
@@ -93,8 +100,8 @@ module xxvmac_subsystem_xxvmac_wrapper #(
   };
 
   xxvmac_subsystem_axis_dwidth_converter_rx dwidth_conv_rx_inst (
-    .aclk          (aclk),
-    .aresetn       (aresetn),
+    .aclk          (xxvmac_clk[0]),
+    .aresetn       (user_rx_reset_0),
 
     .s_axis_tvalid (axis_rx_tvalid),
     .s_axis_tready (),
@@ -116,8 +123,8 @@ module xxvmac_subsystem_xxvmac_wrapper #(
   assign axis_tx_tuser_err = axis_tx_tuser[0];
 
   xxvmac_subsystem_axis_dwidth_converter_tx dwidth_conv_tx_inst (
-    .aclk          (aclk),
-    .aresetn       (aresetn),
+    .aclk          (xxvmac_clk[0]),
+    .aresetn       (user_tx_reset_0),
 
     .s_axis_tvalid (s_axis_tx_tvalid),
     .s_axis_tready (s_axis_tx_tready),
@@ -134,6 +141,41 @@ module xxvmac_subsystem_xxvmac_wrapper #(
     .m_axis_tuser  (axis_tx_tuser)
   );
 
+  // xg_mac
+`ifdef __fixstars_xg_mac__
+  wire  [63:0] rx_mii_d_0;
+  wire   [7:0] rx_mii_c_0;
+  wire  [63:0] tx_mii_d_0;
+  wire   [7:0] tx_mii_c_0;
+
+  xg_mac_0 xg_mac_inst (
+    .tx_clock        (xxvmac_clk[0]),
+    .tx_reset        (user_tx_reset_0),
+    
+    .tx_xgmii_d      (tx_mii_d_0),
+    .tx_xgmii_c      (tx_mii_c_0),
+
+    .tx_saxis_tvalid (axis_tx_tvalid),
+    .tx_saxis_tready (axis_tx_tready),
+    .tx_saxis_tdata  (axis_tx_tdata),
+    .tx_saxis_tkeep  (axis_tx_tkeep),
+    .tx_saxis_tlast  (axis_tx_tlast),
+    .tx_saxis_tuser  (axis_tx_tuser_err),
+
+    .rx_clock        (xxvmac_clk[0]),
+    .rx_reset        (user_rx_reset_0),
+    
+    .rx_xgmii_d      (rx_mii_d_0),
+    .rx_xgmii_c      (rx_mii_c_0),
+
+    .rx_maxis_tvalid (axis_rx_tvalid),
+    .rx_maxis_tdata  (axis_rx_tdata),
+    .rx_maxis_tkeep  (axis_rx_tkeep),
+    .rx_maxis_tlast  (axis_rx_tlast),
+    .rx_maxis_tuser  (axis_rx_tuser_err)
+  );
+`endif
+
   generate if (XXVMAC_ID == 0) begin
     xxv_ethernet_0 xxvmac_inst (
       .gt_rxp_in                        (gt_rxp),
@@ -147,17 +189,16 @@ module xxvmac_subsystem_xxvmac_wrapper #(
       .gt_refclk_out                    (),
       .rxrecclkout_0                    (),
       .rx_clk_out_0                     (),
-      .tx_clk_out_0                     (tx_clk_out_0),
       .rx_core_clk_0                    (tx_clk_out_0),
       .dclk                             (axil_aclk),
 
       .sys_reset                        (xxvmac_sys_reset),
-      .rx_reset_0                       (1'b0),
+      .rx_reset_0                       (user_tx_reset_0),
       .tx_reset_0                       (1'b0),
       .gtwiz_reset_rx_datapath_0        (1'b0),
       .gtwiz_reset_tx_datapath_0        (1'b0),
-      .user_rx_reset_0                  (),
-      .user_tx_reset_0                  (),
+      .user_rx_reset_0                  (user_rx_reset_0),
+      .user_tx_reset_0                  (user_tx_reset_0),
       .qpllreset_in_0                   (1'b0),
 
       .s_axi_aclk_0                     (axil_aclk),
@@ -181,6 +222,35 @@ module xxvmac_subsystem_xxvmac_wrapper #(
       .s_axi_rvalid_0                   (s_axil_rvalid),
       .s_axi_rready_0                   (s_axil_rready),
 
+      .txoutclksel_in_0                 (3'b101),
+      .rxoutclksel_in_0                 (3'b101),
+      .gtpowergood_out_0                (),
+      .pm_tick_0                        (1'b0),
+      .user_reg0_0                      (),
+
+`ifdef __fixstars_xg_mac__
+      .tx_mii_clk_0                     (tx_clk_out_0),
+      .rx_mii_d_0                       (rx_mii_d_0),
+      .rx_mii_c_0                       (rx_mii_c_0),
+      .tx_mii_d_0                       (tx_mii_d_0),
+      .tx_mii_c_0                       (tx_mii_c_0),
+
+      .stat_rx_framing_err_0            (),
+      .stat_rx_framing_err_valid_0      (),
+      .stat_rx_local_fault_0            (),
+      .stat_rx_block_lock_0             (),
+      .stat_rx_valid_ctrl_code_0        (),
+      .stat_rx_status_0                 (),
+      .stat_rx_hi_ber_0                 (),
+      .stat_rx_bad_code_0               (),
+      .stat_rx_bad_code_valid_0         (),
+      .stat_rx_error_0                  (),
+      .stat_rx_error_valid_0            (),
+      .stat_rx_fifo_error_0             (),
+      .stat_tx_local_fault_0            ()
+`else
+      .tx_clk_out_0                     (tx_clk_out_0),
+
       .rx_axis_tvalid_0                 (axis_rx_tvalid),
       .rx_axis_tdata_0                  (axis_rx_tdata),
       .rx_axis_tlast_0                  (axis_rx_tlast),
@@ -197,14 +267,9 @@ module xxvmac_subsystem_xxvmac_wrapper #(
       .tx_preamblein_0                  (56'b0),
 
       .tx_unfout_0                      (),
-      .txoutclksel_in_0                 (3'b101),
-      .rxoutclksel_in_0                 (3'b101),
-      .gtpowergood_out_0                (),
-      .pm_tick_0                        (1'b0),
       .ctl_tx_send_rfi_0                (1'b0),
       .ctl_tx_send_lfi_0                (1'b0),
       .ctl_tx_send_idle_0               (1'b0),
-      .user_reg0_0                      (),
 
       .stat_rx_framing_err_0            (),
       .stat_rx_framing_err_valid_0      (),
@@ -278,6 +343,7 @@ module xxvmac_subsystem_xxvmac_wrapper #(
       .stat_tx_broadcast_0              (),
       .stat_tx_vlan_0                   (),
       .stat_tx_frame_error_0            ()
+`endif
     );
   end
   else begin

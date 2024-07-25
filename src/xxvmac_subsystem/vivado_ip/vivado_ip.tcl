@@ -17,6 +17,7 @@
 # *************************************************************************
 set ips {
     xxv_ethernet_0
+    xg_mac_0
     xxvmac_subsystem_axi_crossbar
     xxvmac_subsystem_axis_dwidth_converter_rx
     xxvmac_subsystem_axis_dwidth_converter_tx

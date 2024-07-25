@@ -17,9 +17,20 @@
 # *************************************************************************
 set xxv_ethernet xxv_ethernet_0
 create_ip -name xxv_ethernet -vendor xilinx.com -library ip -module_name $xxv_ethernet -dir ${ip_build_dir}
+
+if {$fixstars_xg_mac} {
+    set_property -dict [list \
+      CONFIG.CORE {Ethernet PCS/PMA 64-bit} \
+      CONFIG.DATA_PATH_INTERFACE {MII} \
+    ] [get_ips $xxv_ethernet]
+} else {
+    set_property -dict [list \
+      CONFIG.CORE {Ethernet MAC+PCS/PMA 64-bit} \
+    ] [get_ips $xxv_ethernet]
+}
+
 set_property -dict [list \
   CONFIG.BASE_R_KR {BASE-R} \
-  CONFIG.CORE {Ethernet MAC+PCS/PMA 64-bit} \
   CONFIG.ENABLE_TX_FLOW_CONTROL_LOGIC {0} \
   CONFIG.GT_REF_CLK_FREQ {161.1328125} \
   CONFIG.INCLUDE_AXI4_INTERFACE {1} \
@@ -35,4 +46,3 @@ set_property -dict [list \
 
 # CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp0_refclk0}
 # CONFIG.ETHERNET_BOARD_INTERFACE {qsfp0_4x}
-

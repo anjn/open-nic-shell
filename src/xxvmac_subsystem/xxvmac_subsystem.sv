@@ -18,50 +18,51 @@
 `timescale 1ns/1ps
 module xxvmac_subsystem #(
   parameter int XXVMAC_ID   = 0,
+  parameter int NUM_PORT    = 1,
   parameter int MIN_PKT_LEN = 64,
   parameter int MAX_PKT_LEN = 1518
 ) (
-  input          s_axil_awvalid,
-  input   [31:0] s_axil_awaddr,
-  output         s_axil_awready,
-  input          s_axil_wvalid,
-  input   [31:0] s_axil_wdata,
-  output         s_axil_wready,
-  output         s_axil_bvalid,
-  output   [1:0] s_axil_bresp,
-  input          s_axil_bready,
-  input          s_axil_arvalid,
-  input   [31:0] s_axil_araddr,
-  output         s_axil_arready,
-  output         s_axil_rvalid,
-  output  [31:0] s_axil_rdata,
-  output   [1:0] s_axil_rresp,
-  input          s_axil_rready,
+  input                   s_axil_awvalid,
+  input            [31:0] s_axil_awaddr,
+  output                  s_axil_awready,
+  input                   s_axil_wvalid,
+  input            [31:0] s_axil_wdata,
+  output                  s_axil_wready,
+  output                  s_axil_bvalid,
+  output            [1:0] s_axil_bresp,
+  input                   s_axil_bready,
+  input                   s_axil_arvalid,
+  input            [31:0] s_axil_araddr,
+  output                  s_axil_arready,
+  output                  s_axil_rvalid,
+  output           [31:0] s_axil_rdata,
+  output            [1:0] s_axil_rresp,
+  input                   s_axil_rready,
 
-  input          s_axis_xxvmac_tx_tvalid,
-  input  [511:0] s_axis_xxvmac_tx_tdata,
-  input   [63:0] s_axis_xxvmac_tx_tkeep,
-  input          s_axis_xxvmac_tx_tlast,
-  input          s_axis_xxvmac_tx_tuser_err,
-  output         s_axis_xxvmac_tx_tready,
+  input                   s_axis_xxvmac_tx_tvalid,
+  input           [511:0] s_axis_xxvmac_tx_tdata,
+  input            [63:0] s_axis_xxvmac_tx_tkeep,
+  input                   s_axis_xxvmac_tx_tlast,
+  input                   s_axis_xxvmac_tx_tuser_err,
+  output                  s_axis_xxvmac_tx_tready,
 
-  output         m_axis_xxvmac_rx_tvalid,
-  output [511:0] m_axis_xxvmac_rx_tdata,
-  output  [63:0] m_axis_xxvmac_rx_tkeep,
-  output         m_axis_xxvmac_rx_tlast,
-  output         m_axis_xxvmac_rx_tuser_err,
+  output                  m_axis_xxvmac_rx_tvalid,
+  output          [511:0] m_axis_xxvmac_rx_tdata,
+  output           [63:0] m_axis_xxvmac_rx_tkeep,
+  output                  m_axis_xxvmac_rx_tlast,
+  output                  m_axis_xxvmac_rx_tuser_err,
 
-  input    [3:0] gt_rxp,
-  input    [3:0] gt_rxn,
-  output   [3:0] gt_txp,
-  output   [3:0] gt_txn,
-  input          gt_refclk_p,
-  input          gt_refclk_n,
+  input    [NUM_PORT-1:0] gt_rxp,
+  input    [NUM_PORT-1:0] gt_rxn,
+  output   [NUM_PORT-1:0] gt_txp,
+  output   [NUM_PORT-1:0] gt_txn,
+  input                   gt_refclk_p,
+  input                   gt_refclk_n,
 
-  output         xxvmac_clk,
-  input          mod_rstn,
-  output         mod_rst_done,
-  input          axil_aclk
+  output   [NUM_PORT-1:0] xxvmac_clk,
+  input                   mod_rstn,
+  output                  mod_rst_done,
+  input                   axil_aclk
 );
 
   wire         axil_aresetn;
@@ -121,7 +122,7 @@ module xxvmac_subsystem #(
   ) reset_inst (
     .mod_rstn     (mod_rstn),
     .mod_rst_done (mod_rst_done),
-    .clk          ({xxvmac_clk, axil_aclk}),
+    .clk          ({xxvmac_clk[0], axil_aclk}),
     .rstn         ({xxvmac_rstn, axil_aresetn})
   );
 
@@ -230,7 +231,7 @@ module xxvmac_subsystem #(
     .m_axis_tuser  (axis_xxvmac_tx_tuser_err),
     .m_axis_tready (axis_xxvmac_tx_tready),
 
-    .aclk          (xxvmac_clk),
+    .aclk          (xxvmac_clk[0]),
     .aresetn       (xxvmac_rstn)
   );
 
@@ -257,12 +258,13 @@ module xxvmac_subsystem #(
     .m_axis_tuser  (m_axis_xxvmac_rx_tuser_err),
     .m_axis_tready (1'b1),
 
-    .aclk          (xxvmac_clk),
+    .aclk          (xxvmac_clk[0]),
     .aresetn       (xxvmac_rstn)
   );
 
   xxvmac_subsystem_xxvmac_wrapper #(
-    .XXVMAC_ID (XXVMAC_ID)
+    .XXVMAC_ID (XXVMAC_ID),
+    .NUM_PORT  (NUM_PORT)
   ) xxvmac_wrapper_inst (
     .gt_rxp              (gt_rxp),
     .gt_rxn              (gt_rxn),

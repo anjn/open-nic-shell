@@ -118,7 +118,9 @@ array set design_params {
     -num_phys_func    1
     -num_qdma         1
     -num_queue        512
-    -num_cmac_port    1
+    -num_cmac_port    0
+    -num_xxvmac_port  1
+    -fixstars_xg_mac  1
 }
 set design_params(-build_timestamp) [clock format [clock seconds] -format %m%d%H%M]
 
@@ -177,8 +179,12 @@ if {$use_phys_func == 1} {
         exit
     }
 }
-if {$num_cmac_port != 1 && $num_cmac_port != 2} {
-    puts "Invalid value for -num_cmac_port: allowed values are 1 and 2"
+if {$num_cmac_port >= 0 && $num_cmac_port <= 2} {
+    puts "Invalid value for -num_cmac_port: allowed range is \[0, 2\]"
+    exit
+}
+if {$num_cmac_port == 0 && $num_xxvmac_port == 0) {
+    puts "Invalid value for -num_cmac_port and -num_xxvmac_port: at least 1 port should be enabled"
     exit
 }
 
@@ -249,6 +255,11 @@ if {![file exists ${ip_build_dir}/manage_ip/]} {
     puts "INFO: \[Manage IP\] Opening existing Manage IP project..."
     open_project -quiet ${ip_build_dir}/manage_ip/manage_ip.xpr
 }
+
+# Add IP repository path
+lappend ip_repo_path_list [file normalize ../../open-nic/xg_mac/xg_mac/]
+set_property IP_REPO_PATHS $ip_repo_path_list [current_fileset]
+update_ip_catalog
 
 # Run synthesis for each IP
 set ip_dict [dict create]
@@ -339,10 +350,16 @@ if {![string equal $board_part ""]} {
 }
 set_property target_language verilog [current_project]
 
+set_property IP_REPO_PATHS $ip_repo_path_list [current_fileset]
+update_ip_catalog
+
 # Marco to enable conditional compilation at Verilog level
 set verilog_define "__synthesis__ __${board}__"
 if {$zynq_family} {
     append verilog_define " " "__zynq_family__"
+}
+if {$fixstars_xg_mac} {
+    append verilog_define " " "__fixstars_xg_mac__"
 }
 set_property verilog_define $verilog_define [current_fileset]
 
