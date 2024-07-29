@@ -151,7 +151,7 @@ module xxvmac_subsystem_xxvmac_wrapper #(
   xg_mac_0 xg_mac_inst (
     .tx_clock        (xxvmac_clk[0]),
     .tx_reset        (user_tx_reset_0),
-    
+
     .tx_xgmii_d      (tx_mii_d_0),
     .tx_xgmii_c      (tx_mii_c_0),
 
@@ -164,7 +164,7 @@ module xxvmac_subsystem_xxvmac_wrapper #(
 
     .rx_clock        (xxvmac_clk[0]),
     .rx_reset        (user_rx_reset_0),
-    
+
     .rx_xgmii_d      (rx_mii_d_0),
     .rx_xgmii_c      (rx_mii_c_0),
 

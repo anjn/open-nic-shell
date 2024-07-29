@@ -60,7 +60,6 @@ module qdma_subsystem #(
   input   [16*NUM_PHYS_FUNC-1:0] s_axis_c2h_tuser_dst,
   output     [NUM_PHYS_FUNC-1:0] s_axis_c2h_tready,
 
-`ifdef __synthesis__
   input                   [15:0] pcie_rxp,
   input                   [15:0] pcie_rxn,
   output                  [15:0] pcie_txp,
@@ -94,54 +93,12 @@ module qdma_subsystem #(
   // routed into the `system_config` submodule to generate proper reset signals
   // for each submodule.
   output                         powerup_rstn,
-`else // !`ifdef __synthesis__
-  input                          s_axis_qdma_h2c_tvalid,
-  input                  [511:0] s_axis_qdma_h2c_tdata,
-  input                   [31:0] s_axis_qdma_h2c_tcrc,
-  input                          s_axis_qdma_h2c_tlast,
-  input                   [10:0] s_axis_qdma_h2c_tuser_qid,
-  input                    [2:0] s_axis_qdma_h2c_tuser_port_id,
-  input                          s_axis_qdma_h2c_tuser_err,
-  input                   [31:0] s_axis_qdma_h2c_tuser_mdata,
-  input                    [5:0] s_axis_qdma_h2c_tuser_mty,
-  input                          s_axis_qdma_h2c_tuser_zero_byte,
-  output                         s_axis_qdma_h2c_tready,
-
-  output                         m_axis_qdma_c2h_tvalid,
-  output                 [511:0] m_axis_qdma_c2h_tdata,
-  output                  [31:0] m_axis_qdma_c2h_tcrc,
-  output                         m_axis_qdma_c2h_tlast,
-  output                         m_axis_qdma_c2h_ctrl_marker,
-  output                   [2:0] m_axis_qdma_c2h_ctrl_port_id,
-  output                   [6:0] m_axis_qdma_c2h_ctrl_ecc,
-  output                  [15:0] m_axis_qdma_c2h_ctrl_len,
-  output                  [10:0] m_axis_qdma_c2h_ctrl_qid,
-  output                         m_axis_qdma_c2h_ctrl_has_cmpt,
-  output                   [5:0] m_axis_qdma_c2h_mty,
-  input                          m_axis_qdma_c2h_tready,
-
-  output                         m_axis_qdma_cpl_tvalid,
-  output                 [511:0] m_axis_qdma_cpl_tdata,
-  output                   [1:0] m_axis_qdma_cpl_size,
-  output                  [15:0] m_axis_qdma_cpl_dpar,
-  output                  [10:0] m_axis_qdma_cpl_ctrl_qid,
-  output                   [1:0] m_axis_qdma_cpl_ctrl_cmpt_type,
-  output                  [15:0] m_axis_qdma_cpl_ctrl_wait_pld_pkt_id,
-  output                   [2:0] m_axis_qdma_cpl_ctrl_port_id,
-  output                         m_axis_qdma_cpl_ctrl_marker,
-  output                         m_axis_qdma_cpl_ctrl_user_trig,
-  output                   [2:0] m_axis_qdma_cpl_ctrl_col_idx,
-  output                   [2:0] m_axis_qdma_cpl_ctrl_err_idx,
-  output                         m_axis_qdma_cpl_ctrl_no_wrb_marker,
-  input                          m_axis_qdma_cpl_tready,
-`endif
 
   input                          mod_rstn,
   output                         mod_rst_done,
 
   input                          axil_cfg_aclk,
 
-`ifdef __synthesis__
   output                         axil_aclk,
 
 `ifdef __au55n__
@@ -155,23 +112,6 @@ module qdma_subsystem #(
 `endif
   input                          axis_master_aclk,
   output                         axis_aclk
-
-`else // !`ifdef __synthesis__
-  output reg                     axil_aclk,
-
-`ifdef __au55n__
-  output reg                     ref_clk_100mhz,
-`elsif __au55c__
-  output reg                     ref_clk_100mhz,
-`elsif __au50__
-  output reg                     ref_clk_100mhz,
-`elsif __au280__
-  output reg                     ref_clk_100mhz,
-`endif
-  input reg                      axis_master_aclk,
-  output reg                     axis_aclk
-
-`endif
 );
 
   wire         axis_qdma_h2c_tvalid;
@@ -276,7 +216,6 @@ module qdma_subsystem #(
     .rstn         (axil_aresetn)
   );
 
-`ifdef __synthesis__
   wire         pcie_refclk_gt;
   wire         pcie_refclk;
 
@@ -449,75 +388,6 @@ module qdma_subsystem #(
 
     .aresetn                         (powerup_rstn)
   );
-`else // !`ifdef __synthesis__
-  initial begin
-    axil_aclk = 1'b1;
-    axis_aclk = 1'b1;
-  
-`ifdef __au55n__
-    ref_clk_100mhz = 1'b1;
-`elsif __au55c__
-    ref_clk_100mhz = 1'b1;
-`elsif __au50__
-    ref_clk_100mhz = 1'b1;
-`elsif __au280__
-    ref_clk_100mhz = 1'b1;
-`endif
-  end
-
-  always #4000ps axil_aclk = ~axil_aclk;
-  always #2000ps axis_aclk = ~axis_aclk;
-
-`ifdef __au55n__
-  always #5000ps ref_clk_100mhz = ~ref_clk_100mhz;
-`elsif __au55c__
-  always #5000ps ref_clk_100mhz = ~ref_clk_100mhz;
-`elsif __au50__
-  always #5000ps ref_clk_100mhz = ~ref_clk_100mhz;
-`elsif __au280__
-  always #5000ps ref_clk_100mhz = ~ref_clk_100mhz;
-`endif
-
-  assign axis_qdma_h2c_tvalid                 = s_axis_qdma_h2c_tvalid;
-  assign axis_qdma_h2c_tdata                  = s_axis_qdma_h2c_tdata;
-  assign axis_qdma_h2c_tcrc                   = s_axis_qdma_h2c_tcrc;
-  assign axis_qdma_h2c_tlast                  = s_axis_qdma_h2c_tlast;
-  assign axis_qdma_h2c_tuser_qid              = s_axis_qdma_h2c_tuser_qid;
-  assign axis_qdma_h2c_tuser_port_id          = s_axis_qdma_h2c_tuser_port_id;
-  assign axis_qdma_h2c_tuser_err              = s_axis_qdma_h2c_tuser_err;
-  assign axis_qdma_h2c_tuser_mdata            = s_axis_qdma_h2c_tuser_mdata;
-  assign axis_qdma_h2c_tuser_mty              = s_axis_qdma_h2c_tuser_mty;
-  assign axis_qdma_h2c_tuser_zero_byte        = s_axis_qdma_h2c_tuser_zero_byte;
-  assign s_axis_qdma_h2c_tready               = axis_qdma_h2c_tready;
-
-  assign m_axis_qdma_c2h_tvalid               = axis_qdma_c2h_tvalid;
-  assign m_axis_qdma_c2h_tdata                = axis_qdma_c2h_tdata;
-  assign m_axis_qdma_c2h_tcrc                 = axis_qdma_c2h_tcrc;
-  assign m_axis_qdma_c2h_tlast                = axis_qdma_c2h_tlast;
-  assign m_axis_qdma_c2h_ctrl_marker          = axis_qdma_c2h_ctrl_marker;
-  assign m_axis_qdma_c2h_ctrl_port_id         = axis_qdma_c2h_ctrl_port_id;
-  assign m_axis_qdma_c2h_ctrl_ecc             = axis_qdma_c2h_ctrl_ecc;
-  assign m_axis_qdma_c2h_ctrl_len             = axis_qdma_c2h_ctrl_len;
-  assign m_axis_qdma_c2h_ctrl_qid             = axis_qdma_c2h_ctrl_qid;
-  assign m_axis_qdma_c2h_ctrl_has_cmpt        = axis_qdma_c2h_ctrl_has_cmpt;
-  assign m_axis_qdma_c2h_mty                  = axis_qdma_c2h_mty;
-  assign axis_qdma_c2h_tready                 = m_axis_qdma_c2h_tready;
-
-  assign m_axis_qdma_cpl_tvalid               = axis_qdma_cpl_tvalid;
-  assign m_axis_qdma_cpl_tdata                = axis_qdma_cpl_tdata;
-  assign m_axis_qdma_cpl_size                 = axis_qdma_cpl_size;
-  assign m_axis_qdma_cpl_dpar                 = axis_qdma_cpl_dpar;
-  assign m_axis_qdma_cpl_ctrl_qid             = axis_qdma_cpl_ctrl_qid;
-  assign m_axis_qdma_cpl_ctrl_cmpt_type       = axis_qdma_cpl_ctrl_cmpt_type;
-  assign m_axis_qdma_cpl_ctrl_wait_pld_pkt_id = axis_qdma_cpl_ctrl_wait_pld_pkt_id;
-  assign m_axis_qdma_cpl_ctrl_port_id         = axis_qdma_cpl_ctrl_port_id;
-  assign m_axis_qdma_cpl_ctrl_marker          = axis_qdma_cpl_ctrl_marker;
-  assign m_axis_qdma_cpl_ctrl_user_trig       = axis_qdma_cpl_ctrl_user_trig;
-  assign m_axis_qdma_cpl_ctrl_col_idx         = axis_qdma_cpl_ctrl_col_idx;
-  assign m_axis_qdma_cpl_ctrl_err_idx         = axis_qdma_cpl_ctrl_err_idx;
-  assign m_axis_qdma_cpl_ctrl_no_wrb_marker   = axis_qdma_cpl_ctrl_no_wrb_marker;
-  assign axis_qdma_cpl_tready                 = m_axis_qdma_cpl_tready;
-`endif
 
   generate if (USE_PHYS_FUNC == 0) begin
     // Terminate the AXI-lite interface for QDMA subsystem registers

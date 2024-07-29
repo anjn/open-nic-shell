@@ -18,24 +18,22 @@
 `include "open_nic_shell_macros.vh"
 `timescale 1ns/1ps
 module open_nic_shell #(
-  parameter [31:0] BUILD_TIMESTAMP = 32'h01010000,
-  parameter int    MIN_PKT_LEN     = 64,
-  parameter int    MAX_PKT_LEN     = 1518,
-  parameter int    USE_PHYS_FUNC   = 1,
-  parameter int    NUM_PHYS_FUNC   = 1,
-  parameter int    NUM_QUEUE       = 512,
-  parameter int    NUM_QDMA        = 1,
-  parameter int    NUM_CMAC_PORT   = 0,
-  parameter int    NUM_CMAC_CORE   = NUM_CMAC_PORT,
-  parameter int    NUM_XXVMAC_PORT = 1,
-  parameter int    NUM_XXVMAC_CORE = (NUM_XXVMAC_PORT + 3) / 4,
-  parameter int    NUM_MAC_STREAM  = NUM_CMAC_PORT + NUM_XXVMAC_PORT,
-  parameter int    NUM_MAC_CORE    = NUM_CMAC_CORE + NUM_XXVMAC_CORE,
-  parameter int    NUM_QSFP_GT     = NUM_CMAC_PORT * 4 + NUM_XXVMAC_PORT,
-  parameter int    NUM_QSFP_GT_REF = (NUM_QSFP_GT + 3) / 4
+  parameter logic [31:0] BUILD_TIMESTAMP = 32'h01010000,
+  parameter int          MIN_PKT_LEN     = 64,
+  parameter int          MAX_PKT_LEN     = 1518,
+  parameter int          USE_PHYS_FUNC   = 1,
+  parameter int          NUM_PHYS_FUNC   = 1,
+  parameter int          NUM_QUEUE       = 512,
+  parameter int          NUM_QDMA        = 1,
+  parameter int          NUM_CMAC_PORT   = 0,
+  parameter int          NUM_CMAC_CORE   = NUM_CMAC_PORT,
+  parameter int          NUM_XXVMAC_PORT = 1,
+  parameter int          NUM_XXVMAC_CORE = (NUM_XXVMAC_PORT + 3) / 4,
+  parameter int          NUM_MAC_STREAM  = NUM_CMAC_PORT + NUM_XXVMAC_PORT,
+  parameter int          NUM_MAC_CORE    = NUM_CMAC_CORE + NUM_XXVMAC_CORE,
+  parameter int          NUM_QSFP_GT     = NUM_CMAC_PORT * 4 + NUM_XXVMAC_PORT,
+  parameter int          NUM_QSFP_GT_REF = (NUM_QSFP_GT + 3) / 4
 ) (
-`ifdef __synthesis__
-
 // Fix the CATTRIP issue for AU280, AU50, AU55C, and AU55N custom flow
 `ifdef __au280__
   output                         hbm_cattrip,
@@ -50,16 +48,16 @@ module open_nic_shell #(
   output                         hbm_cattrip,
   input                    [3:0] satellite_gpio,
 `elsif __au200__
-  output                   [1:0] qsfp_resetl, 
+  output                   [1:0] qsfp_resetl,
   input                    [1:0] qsfp_modprsl,
-  input                    [1:0] qsfp_intl,   
+  input                    [1:0] qsfp_intl,
   output                   [1:0] qsfp_lpmode,
   output                   [1:0] qsfp_modsell,
   input                    [3:0] satellite_gpio,
 `elsif __au250__
-  output                   [1:0] qsfp_resetl, 
+  output                   [1:0] qsfp_resetl,
   input                    [1:0] qsfp_modprsl,
-  input                    [1:0] qsfp_intl,   
+  input                    [1:0] qsfp_intl,
   output                   [1:0] qsfp_lpmode,
   output                   [1:0] qsfp_modsell,
   input                    [3:0] satellite_gpio,
@@ -100,98 +98,6 @@ module open_nic_shell #(
 
   input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_p,
   input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_n
-
-`else // !`ifdef __synthesis__
-  input     [NUM_QDMA-1:0] s_axil_sim_awvalid,
-  input  [32*NUM_QDMA-1:0] s_axil_sim_awaddr,
-  output    [NUM_QDMA-1:0] s_axil_sim_awready,
-  input     [NUM_QDMA-1:0] s_axil_sim_wvalid,
-  input  [32*NUM_QDMA-1:0] s_axil_sim_wdata,
-  output    [NUM_QDMA-1:0] s_axil_sim_wready,
-  output    [NUM_QDMA-1:0] s_axil_sim_bvalid,
-  output  [2*NUM_QDMA-1:0] s_axil_sim_bresp,
-  input     [NUM_QDMA-1:0] s_axil_sim_bready,
-  input     [NUM_QDMA-1:0] s_axil_sim_arvalid,
-  input  [32*NUM_QDMA-1:0] s_axil_sim_araddr,
-  output    [NUM_QDMA-1:0] s_axil_sim_arready,
-  output    [NUM_QDMA-1:0] s_axil_sim_rvalid,
-  output [32*NUM_QDMA-1:0] s_axil_sim_rdata,
-  output  [2*NUM_QDMA-1:0] s_axil_sim_rresp,
-  input     [NUM_QDMA-1:0] s_axil_sim_rready,
-
-  input      [NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tvalid,
-  input  [512*NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tdata,
-  input   [32*NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tcrc,
-  input      [NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tlast,
-  input   [11*NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tuser_qid,
-  input    [3*NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tuser_port_id,
-  input      [NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tuser_err,
-  input   [32*NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tuser_mdata,
-  input    [6*NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tuser_mty,
-  input      [NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tuser_zero_byte,
-  output     [NUM_QDMA-1:0] s_axis_qdma_h2c_sim_tready,
-
-  output     [NUM_QDMA-1:0] m_axis_qdma_c2h_sim_tvalid,
-  output [512*NUM_QDMA-1:0] m_axis_qdma_c2h_sim_tdata,
-  output  [32*NUM_QDMA-1:0] m_axis_qdma_c2h_sim_tcrc,
-  output     [NUM_QDMA-1:0] m_axis_qdma_c2h_sim_tlast,
-  output     [NUM_QDMA-1:0] m_axis_qdma_c2h_sim_ctrl_marker,
-  output   [3*NUM_QDMA-1:0] m_axis_qdma_c2h_sim_ctrl_port_id,
-  output   [7*NUM_QDMA-1:0] m_axis_qdma_c2h_sim_ctrl_ecc,
-  output  [16*NUM_QDMA-1:0] m_axis_qdma_c2h_sim_ctrl_len,
-  output  [11*NUM_QDMA-1:0] m_axis_qdma_c2h_sim_ctrl_qid,
-  output     [NUM_QDMA-1:0] m_axis_qdma_c2h_sim_ctrl_has_cmpt,
-  output   [6*NUM_QDMA-1:0] m_axis_qdma_c2h_sim_mty,
-  input      [NUM_QDMA-1:0] m_axis_qdma_c2h_sim_tready,
-
-  output     [NUM_QDMA-1:0] m_axis_qdma_cpl_sim_tvalid,
-  output [512*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_tdata,
-  output   [2*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_size,
-  output  [16*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_dpar,
-  output  [11*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_qid,
-  output   [2*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_cmpt_type,
-  output  [16*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_wait_pld_pkt_id,
-  output   [3*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_port_id,
-  output     [NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_marker,
-  output     [NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_user_trig,
-  output   [3*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_col_idx,
-  output   [3*NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_err_idx,
-  output     [NUM_QDMA-1:0] m_axis_qdma_cpl_sim_ctrl_no_wrb_marker,
-  input      [NUM_QDMA-1:0] m_axis_qdma_cpl_sim_tready,
-
-  output     [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tvalid,
-  output [512*NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tdata,
-  output  [64*NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tkeep,
-  output     [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tlast,
-  output     [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tuser_err,
-  input      [NUM_MAC_STREAM-1:0] m_axis_cmac_tx_sim_tready,
-
-  input      [NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tvalid,
-  input  [512*NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tdata,
-  input   [64*NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tkeep,
-  input      [NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tlast,
-  input      [NUM_MAC_STREAM-1:0] s_axis_cmac_rx_sim_tuser_err,
-
-  input  [NUM_QDMA-1:0] powerup_rstn,
-
-  input     [16*NUM_QDMA-1:0] pcie_rxp,
-  input     [16*NUM_QDMA-1:0] pcie_rxn,
-  output    [16*NUM_QDMA-1:0] pcie_txp,
-  output    [16*NUM_QDMA-1:0] pcie_txn,
-
-  input    [NUM_QSFP_GT-1:0] qsfp_rxp,
-  input    [NUM_QSFP_GT-1:0] qsfp_rxn,
-  output   [NUM_QSFP_GT-1:0] qsfp_txp,
-  output   [NUM_QSFP_GT-1:0] qsfp_txn,
-
-  input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_p,
-  input      [NUM_QSFP_GT_REF-1:0] qsfp_refclk_n,
-
-  input                          satellite_uart_0_rxd,
-  output                         satellite_uart_0_txd,
-  output                         hbm_cattrip,
-  input                    [3:0] satellite_gpio
-`endif
 );
 
   // Parameter DRC
@@ -227,14 +133,13 @@ module open_nic_shell #(
     end
   end
 
-`ifdef __synthesis__
+  wire [NUM_QDMA-1:0] powerup_rstn;
 
   wire [16*NUM_QDMA-1:0] qdma_pcie_rxp;
   wire [16*NUM_QDMA-1:0] qdma_pcie_rxn;
   wire [16*NUM_QDMA-1:0] qdma_pcie_txp;
   wire [16*NUM_QDMA-1:0] qdma_pcie_txn;
 
-  wire [NUM_QDMA-1:0] powerup_rstn;
   wire [NUM_QDMA-1:0] pcie_user_lnk_up;
   wire [NUM_QDMA-1:0] pcie_phy_ready;
   wire sys_cfg_powerup_rstn;
@@ -262,7 +167,7 @@ module open_nic_shell #(
     IBUF pcie_rstn_ibuf_inst (.I(pcie_rstn[i]), .O(pcie_rstn_int[i]));
   end
   endgenerate
-  
+
 // Fix the CATTRIP issue for AU280, AU50, AU55C and AU55N custom flow
 //
 // This pin must be tied to 0; otherwise the board might be unrecoverable
@@ -277,14 +182,11 @@ module open_nic_shell #(
 `elsif __au55c__
   OBUF hbm_cattrip_obuf_inst (.I(1'b0), .O(hbm_cattrip));
 `elsif __au250__
-  
 `elsif __au200__
-  
 `endif
 
 `ifdef __zynq_family__
   zynq_usplus_ps zynq_usplus_ps_inst ();
-`endif
 `endif
 
   wire       [NUM_QDMA-1:0] axil_qdma_awvalid;
@@ -514,7 +416,7 @@ module open_nic_shell #(
   assign user_rst_done[29:24] = {6{1'b1}};
 
 
-  assign sys_cfg_powerup_rstn = | powerup_rstn; 
+  assign sys_cfg_powerup_rstn = | powerup_rstn;
 
 `ifdef __au45n__
   assign qdma_pcie_rxp[23:0] = pcie_rxp;
@@ -533,7 +435,6 @@ module open_nic_shell #(
     .NUM_QDMA        (NUM_QDMA),
     .NUM_CMAC_PORT   (NUM_MAC_CORE)
   ) system_config_inst (
-`ifdef __synthesis__
     .s_axil_awvalid      (axil_pcie_awvalid),
     .s_axil_awaddr       (axil_pcie_awaddr),
     .s_axil_awready      (axil_pcie_awready),
@@ -550,24 +451,6 @@ module open_nic_shell #(
     .s_axil_rdata        (axil_pcie_rdata),
     .s_axil_rresp        (axil_pcie_rresp),
     .s_axil_rready       (axil_pcie_rready),
-`else // !`ifdef __synthesis__
-    .s_axil_awvalid      (s_axil_sim_awvalid),
-    .s_axil_awaddr       (s_axil_sim_awaddr),
-    .s_axil_awready      (s_axil_sim_awready),
-    .s_axil_wvalid       (s_axil_sim_wvalid),
-    .s_axil_wdata        (s_axil_sim_wdata),
-    .s_axil_wready       (s_axil_sim_wready),
-    .s_axil_bvalid       (s_axil_sim_bvalid),
-    .s_axil_bresp        (s_axil_sim_bresp),
-    .s_axil_bready       (s_axil_sim_bready),
-    .s_axil_arvalid      (s_axil_sim_arvalid),
-    .s_axil_araddr       (s_axil_sim_araddr),
-    .s_axil_arready      (s_axil_sim_arready),
-    .s_axil_rvalid       (s_axil_sim_rvalid),
-    .s_axil_rdata        (s_axil_sim_rdata),
-    .s_axil_rresp        (s_axil_sim_rresp),
-    .s_axil_rready       (s_axil_sim_rready),
-`endif
 
     .m_axil_qdma_awvalid (axil_qdma_awvalid),
     .m_axil_qdma_awaddr  (axil_qdma_awaddr),
@@ -692,7 +575,6 @@ module open_nic_shell #(
     .qsfp_lpmode             (qsfp_lpmode),
     .qsfp_modsell            (qsfp_modsell),
   `elsif __au45n__
-  
   `endif
 
     .aclk                (axil_aclk),
@@ -743,12 +625,11 @@ module open_nic_shell #(
       .s_axis_c2h_tuser_dst                 (axis_qdma_c2h_tuser_dst[`getvec(16*NUM_PHYS_FUNC, i)]),
       .s_axis_c2h_tready                    (axis_qdma_c2h_tready[`getvec(NUM_PHYS_FUNC, i)]),
 
-  `ifdef __synthesis__
       .pcie_rxp                             (qdma_pcie_rxp[`getvec(16, i)]),
       .pcie_rxn                             (qdma_pcie_rxn[`getvec(16, i)]),
       .pcie_txp                             (qdma_pcie_txp[`getvec(16, i)]),
       .pcie_txn                             (qdma_pcie_txn[`getvec(16, i)]),
-    
+
       .m_axil_pcie_awvalid                  (axil_pcie_awvalid[i]),
       .m_axil_pcie_awaddr                   (axil_pcie_awaddr[`getvec(32, i)]),
       .m_axil_pcie_awready                  (axil_pcie_awready[i]),
@@ -772,47 +653,6 @@ module open_nic_shell #(
       .user_lnk_up                          (pcie_user_lnk_up[i]),
       .phy_ready                            (pcie_phy_ready[i]),
       .powerup_rstn                         (powerup_rstn[i]),
-  `else // !`ifdef __synthesis__
-      .s_axis_qdma_h2c_tvalid               (s_axis_qdma_h2c_sim_tvalid[i]),
-      .s_axis_qdma_h2c_tdata                (s_axis_qdma_h2c_sim_tdata[`getvec(512, i)]),
-      .s_axis_qdma_h2c_tcrc                 (s_axis_qdma_h2c_sim_tcrc[`getvec(32, i)]),
-      .s_axis_qdma_h2c_tlast                (s_axis_qdma_h2c_sim_tlast[i]),
-      .s_axis_qdma_h2c_tuser_qid            (s_axis_qdma_h2c_sim_tuser_qid[`getvec(11, i)]),
-      .s_axis_qdma_h2c_tuser_port_id        (s_axis_qdma_h2c_sim_tuser_port_id[`getvec(3, i)]),
-      .s_axis_qdma_h2c_tuser_err            (s_axis_qdma_h2c_sim_tuser_err[i]),
-      .s_axis_qdma_h2c_tuser_mdata          (s_axis_qdma_h2c_sim_tuser_mdata[`getvec(32, i)]),
-      .s_axis_qdma_h2c_tuser_mty            (s_axis_qdma_h2c_sim_tuser_mty[`getvec(6, i)]),
-      .s_axis_qdma_h2c_tuser_zero_byte      (s_axis_qdma_h2c_sim_tuser_zero_byte[i]),
-      .s_axis_qdma_h2c_tready               (s_axis_qdma_h2c_sim_tready[i]),
-
-      .m_axis_qdma_c2h_tvalid               (m_axis_qdma_c2h_sim_tvalid[i]),
-      .m_axis_qdma_c2h_tdata                (m_axis_qdma_c2h_sim_tdata[`getvec(512, i)]),
-      .m_axis_qdma_c2h_tcrc                 (m_axis_qdma_c2h_sim_tcrc[`getvec(32, i)]),
-      .m_axis_qdma_c2h_tlast                (m_axis_qdma_c2h_sim_tlast[i]),
-      .m_axis_qdma_c2h_ctrl_marker          (m_axis_qdma_c2h_sim_ctrl_marker[i]),
-      .m_axis_qdma_c2h_ctrl_port_id         (m_axis_qdma_c2h_sim_ctrl_port_id[`getvec(3, i)]),
-      .m_axis_qdma_c2h_ctrl_ecc             (m_axis_qdma_c2h_sim_ctrl_ecc[`getvec(7, i)]),
-      .m_axis_qdma_c2h_ctrl_len             (m_axis_qdma_c2h_sim_ctrl_len[`getvec(16, i)]),
-      .m_axis_qdma_c2h_ctrl_qid             (m_axis_qdma_c2h_sim_ctrl_qid[`getvec(11, i)]),
-      .m_axis_qdma_c2h_ctrl_has_cmpt        (m_axis_qdma_c2h_sim_ctrl_has_cmpt[i]),
-      .m_axis_qdma_c2h_mty                  (m_axis_qdma_c2h_sim_mty[`getvec(6, i)]),
-      .m_axis_qdma_c2h_tready               (m_axis_qdma_c2h_sim_tready[i]),
-
-      .m_axis_qdma_cpl_tvalid               (m_axis_qdma_cpl_sim_tvalid[i]),
-      .m_axis_qdma_cpl_tdata                (m_axis_qdma_cpl_sim_tdata[`getvec(512, i)]),
-      .m_axis_qdma_cpl_size                 (m_axis_qdma_cpl_sim_size[`getvec(2, i)]),
-      .m_axis_qdma_cpl_dpar                 (m_axis_qdma_cpl_sim_dpar[`getvec(16, i)]),
-      .m_axis_qdma_cpl_ctrl_qid             (m_axis_qdma_cpl_sim_ctrl_qid[`getvec(11, i)]),
-      .m_axis_qdma_cpl_ctrl_cmpt_type       (m_axis_qdma_cpl_sim_ctrl_cmpt_type[`getvec(2, i)]),
-      .m_axis_qdma_cpl_ctrl_wait_pld_pkt_id (m_axis_qdma_cpl_sim_ctrl_wait_pld_pkt_id[`getvec(16, i)]),
-      .m_axis_qdma_cpl_ctrl_port_id         (m_axis_qdma_cpl_sim_ctrl_port_id[`getvec(3, i)]),
-      .m_axis_qdma_cpl_ctrl_marker          (m_axis_qdma_cpl_sim_ctrl_marker[i]),
-      .m_axis_qdma_cpl_ctrl_user_trig       (m_axis_qdma_cpl_sim_ctrl_user_trig[i]),
-      .m_axis_qdma_cpl_ctrl_col_idx         (m_axis_qdma_cpl_sim_ctrl_col_idx[`getvec(3, i)]),
-      .m_axis_qdma_cpl_ctrl_err_idx         (m_axis_qdma_cpl_sim_ctrl_err_idx[`getvec(3, i)]),
-      .m_axis_qdma_cpl_ctrl_no_wrb_marker   (m_axis_qdma_cpl_sim_ctrl_no_wrb_marker[i]),
-      .m_axis_qdma_cpl_tready               (m_axis_qdma_cpl_sim_tready[i]),
-  `endif
 
       .mod_rstn                             (qdma_rstn[i]),
       .mod_rst_done                         (qdma_rst_done[i]),
@@ -935,7 +775,6 @@ module open_nic_shell #(
       .m_axis_cmac_rx_tlast         (axis_cmac_rx_tlast[i]),
       .m_axis_cmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
 
-`ifdef __synthesis__
       .gt_rxp                       (qsfp_rxp[`getvec(4, i)]),
       .gt_rxn                       (qsfp_rxn[`getvec(4, i)]),
       .gt_txp                       (qsfp_txp[`getvec(4, i)]),
@@ -951,22 +790,6 @@ module open_nic_shell #(
 `endif
 
       .cmac_clk                     (cmac_clk[i]),
-`else
-      .m_axis_cmac_tx_sim_tvalid    (m_axis_cmac_tx_sim_tvalid[i]),
-      .m_axis_cmac_tx_sim_tdata     (m_axis_cmac_tx_sim_tdata[`getvec(512, i)]),
-      .m_axis_cmac_tx_sim_tkeep     (m_axis_cmac_tx_sim_tkeep[`getvec(64, i)]),
-      .m_axis_cmac_tx_sim_tlast     (m_axis_cmac_tx_sim_tlast[i]),
-      .m_axis_cmac_tx_sim_tuser_err (m_axis_cmac_tx_sim_tuser_err[i]),
-      .m_axis_cmac_tx_sim_tready    (m_axis_cmac_tx_sim_tready[i]),
-
-      .s_axis_cmac_rx_sim_tvalid    (s_axis_cmac_rx_sim_tvalid[i]),
-      .s_axis_cmac_rx_sim_tdata     (s_axis_cmac_rx_sim_tdata[`getvec(512, i)]),
-      .s_axis_cmac_rx_sim_tkeep     (s_axis_cmac_rx_sim_tkeep[`getvec(64, i)]),
-      .s_axis_cmac_rx_sim_tlast     (s_axis_cmac_rx_sim_tlast[i]),
-      .s_axis_cmac_rx_sim_tuser_err (s_axis_cmac_rx_sim_tuser_err[i]),
-
-      .cmac_clk                     (cmac_clk[i]),
-`endif
 
       .mod_rstn                     (cmac_rstn[i]),
       .mod_rst_done                 (cmac_rst_done[i]),
@@ -976,7 +799,8 @@ module open_nic_shell #(
   endgenerate
 
   generate for (genvar i = NUM_CMAC_CORE; i < NUM_CMAC_CORE + NUM_XXVMAC_CORE; i++) begin: xxvmac_core
-    localparam int NUM_PORT_PER_CORE = NUM_XXVMAC_PORT - (i - NUM_CMAC_CORE) * 4 < 4 ? NUM_XXVMAC_PORT - (i - NUM_CMAC_CORE) * 4 : 4;
+    localparam int NUM_PORT_PER_CORE =
+        NUM_XXVMAC_PORT - (i - NUM_CMAC_CORE) * 4 < 4 ? NUM_XXVMAC_PORT - (i - NUM_CMAC_CORE) * 4 : 4;
     //cmac_subsystem #(
     xxvmac_subsystem #(
       //.CMAC_ID     (i),
@@ -1002,32 +826,19 @@ module open_nic_shell #(
       .s_axil_rresp                 (axil_cmac_rresp[`getvec(2, i)]),
       .s_axil_rready                (axil_cmac_rready[i]),
 
-      //.s_axis_cmac_tx_tvalid        (axis_cmac_tx_tvalid[i]),
-      //.s_axis_cmac_tx_tdata         (axis_cmac_tx_tdata[`getvec(512, i)]),
-      //.s_axis_cmac_tx_tkeep         (axis_cmac_tx_tkeep[`getvec(64, i)]),
-      //.s_axis_cmac_tx_tlast         (axis_cmac_tx_tlast[i]),
-      //.s_axis_cmac_tx_tuser_err     (axis_cmac_tx_tuser_err[i]),
-      //.s_axis_cmac_tx_tready        (axis_cmac_tx_tready[i]),
-
-      //.m_axis_cmac_rx_tvalid        (axis_cmac_rx_tvalid[i]),
-      //.m_axis_cmac_rx_tdata         (axis_cmac_rx_tdata[`getvec(512, i)]),
-      //.m_axis_cmac_rx_tkeep         (axis_cmac_rx_tkeep[`getvec(64, i)]),
-      //.m_axis_cmac_rx_tlast         (axis_cmac_rx_tlast[i]),
-      //.m_axis_cmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
-
       // TODO support multiple ports
-      .s_axis_xxvmac_tx_tvalid        (axis_cmac_tx_tvalid[i]),
-      .s_axis_xxvmac_tx_tdata         (axis_cmac_tx_tdata[`getvec(512, i)]),
-      .s_axis_xxvmac_tx_tkeep         (axis_cmac_tx_tkeep[`getvec(64, i)]),
-      .s_axis_xxvmac_tx_tlast         (axis_cmac_tx_tlast[i]),
-      .s_axis_xxvmac_tx_tuser_err     (axis_cmac_tx_tuser_err[i]),
-      .s_axis_xxvmac_tx_tready        (axis_cmac_tx_tready[i]),
+      .s_axis_xxvmac_tx_tvalid      (axis_cmac_tx_tvalid[i]),
+      .s_axis_xxvmac_tx_tdata       (axis_cmac_tx_tdata[`getvec(512, i)]),
+      .s_axis_xxvmac_tx_tkeep       (axis_cmac_tx_tkeep[`getvec(64, i)]),
+      .s_axis_xxvmac_tx_tlast       (axis_cmac_tx_tlast[i]),
+      .s_axis_xxvmac_tx_tuser_err   (axis_cmac_tx_tuser_err[i]),
+      .s_axis_xxvmac_tx_tready      (axis_cmac_tx_tready[i]),
 
-      .m_axis_xxvmac_rx_tvalid        (axis_cmac_rx_tvalid[i]),
-      .m_axis_xxvmac_rx_tdata         (axis_cmac_rx_tdata[`getvec(512, i)]),
-      .m_axis_xxvmac_rx_tkeep         (axis_cmac_rx_tkeep[`getvec(64, i)]),
-      .m_axis_xxvmac_rx_tlast         (axis_cmac_rx_tlast[i]),
-      .m_axis_xxvmac_rx_tuser_err     (axis_cmac_rx_tuser_err[i]),
+      .m_axis_xxvmac_rx_tvalid      (axis_cmac_rx_tvalid[i]),
+      .m_axis_xxvmac_rx_tdata       (axis_cmac_rx_tdata[`getvec(512, i)]),
+      .m_axis_xxvmac_rx_tkeep       (axis_cmac_rx_tkeep[`getvec(64, i)]),
+      .m_axis_xxvmac_rx_tlast       (axis_cmac_rx_tlast[i]),
+      .m_axis_xxvmac_rx_tuser_err   (axis_cmac_rx_tuser_err[i]),
 
       .gt_rxp                       (qsfp_rxp[i * 4 +: NUM_PORT_PER_CORE]),
       .gt_rxn                       (qsfp_rxn[i * 4 +: NUM_PORT_PER_CORE]),
@@ -1036,7 +847,7 @@ module open_nic_shell #(
       .gt_refclk_p                  (qsfp_refclk_p[i]),
       .gt_refclk_n                  (qsfp_refclk_n[i]),
 
-      .xxvmac_clk                     (cmac_clk[i * 4 +: NUM_PORT_PER_CORE]),
+      .xxvmac_clk                   (cmac_clk[i * 4 +: NUM_PORT_PER_CORE]),
 
       .mod_rstn                     (cmac_rstn[i]),
       .mod_rst_done                 (cmac_rst_done[i]),

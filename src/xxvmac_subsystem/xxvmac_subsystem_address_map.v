@@ -17,7 +17,7 @@
 // *************************************************************************
 // XXVMAC subsystem address map
 //
-// System-level address range: 
+// System-level address range:
 //   - 0x08000 - 0x0AFFF (XXVMAC-0)
 //   - 0x0C000 - 0x0EFFF (XXVMAC-1)
 //

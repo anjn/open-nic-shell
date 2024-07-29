@@ -62,6 +62,7 @@ set constr_dir ${root_dir}/constr
 set plugin_dir ${root_dir}/plugin
 set script_dir ${root_dir}/script
 set src_dir ${root_dir}/src
+set sim_dir ${root_dir}/sim
 
 # Build options
 #   board_repo             Path to the Xilinx board store repository
@@ -100,13 +101,14 @@ array set build_options {
     -overwrite   0
     -rebuild     0
     -jobs        8
-    -synth_ip    1
+    -synth_ip    0
     -impl        0
     -post_impl   0
     -user_plugin ""
     -bitstream_userid  "0xDEADC0DE"
     -bitstream_usr_access "0x66669999"
     -sim  0
+    -fixstars_xg_mac  1
 }
 set build_options(-user_plugin) ${plugin_dir}/p2p
 
@@ -120,14 +122,13 @@ array set design_params {
     -num_queue        512
     -num_cmac_port    0
     -num_xxvmac_port  1
-    -fixstars_xg_mac  1
 }
 set design_params(-build_timestamp) [clock format [clock seconds] -format %m%d%H%M]
 
 array set sim_params {
     -sim_exec_path    ""
     -sim_lib_path     ""
-    -sim_top          ""
+    -sim_top          "tb"
 }
 
 # Expect arguments in the form of `-argument value`
@@ -179,11 +180,11 @@ if {$use_phys_func == 1} {
         exit
     }
 }
-if {$num_cmac_port >= 0 && $num_cmac_port <= 2} {
+if {$num_cmac_port < 0 && $num_cmac_port > 2} {
     puts "Invalid value for -num_cmac_port: allowed range is \[0, 2\]"
     exit
 }
-if {$num_cmac_port == 0 && $num_xxvmac_port == 0) {
+if {$num_cmac_port == 0 && $num_xxvmac_port == 0} {
     puts "Invalid value for -num_cmac_port and -num_xxvmac_port: at least 1 port should be enabled"
     exit
 }
@@ -241,6 +242,7 @@ foreach name [glob -tails -directory ${src_dir} -type d *] {
         dict append module_dict $name "${src_dir}/${name}"
     }
 }
+dict append module_dict "sim" $sim_dir
 
 # Create/open Manage IP project
 set ip_build_dir ${build_dir}/vivado_ip
@@ -257,13 +259,14 @@ if {![file exists ${ip_build_dir}/manage_ip/]} {
 }
 
 # Add IP repository path
-lappend ip_repo_path_list [file normalize ../../open-nic/xg_mac/xg_mac/]
+lappend ip_repo_path_list [file normalize $root_dir/third_party/xg_mac/xg_mac/]
 set_property IP_REPO_PATHS $ip_repo_path_list [current_fileset]
 update_ip_catalog
 
 # Run synthesis for each IP
 set ip_dict [dict create]
 dict for {module module_dir} $module_dict {
+    puts "INFO: \[$module\] Start to build"
     set ip_tcl_dir ${module_dir}/vivado_ip
 
     # Check the existence of "$ip_tcl_dir" and "${ip_tcl_dir}/vivado_ip.tcl"
@@ -280,6 +283,7 @@ dict for {module module_dir} $module_dict {
     }
 
     foreach ip $ips {
+        puts "INFO: \[$module\]\[$ip\]"
         # Pre-save IP name and its build directory to a global dictionary
         dict append ip_dict $ip ${ip_build_dir}/${ip}
 
@@ -404,6 +408,10 @@ dict for {module module_dir} $module_dict {
         cd $script_dir
     }
 
+    if {[string equal $module "sim"]} {
+        continue
+    }
+
     read_verilog -quiet [glob -nocomplain -directory $module_dir "*.{v,vh}"]
     read_verilog -quiet -sv [glob -nocomplain -directory $module_dir "*.sv"]
     read_vhdl -quiet [glob -nocomplain -directory $module_dir "*.vhd"]
@@ -440,25 +448,28 @@ read_xdc ${constr_dir}/${board}/general.xdc
 read_xdc ${build_dir}/run_params.xdc
 
 # Simulate design
-if {$sim} {
-    # Generate simulation libraries
-    set modelsim_lib_path ${sim_params(-sim_lib_path)}/modelsim
-    if {[file exists ${modelsim_lib_path}]} {
-        puts "Skipping compilation of simulation libraries as directory ${modelsim_lib_path} exists."
-    } else {
-        puts "Compiling simulation libraries in directory ${modelsim_lib_path}."
-        compile_simlib -simulator modelsim -simulator_exec_path ${sim_params(-sim_exec_path)} \
-            -family all -language all -library all \
-            -dir ${modelsim_lib_path}
-    }
+set_property SOURCE_SET sources_1 [get_filesets sim_1]
+add_files -fileset sim_1 [glob -nocomplain -director $sim_dir "*.sv"]
 
-    # Export simulation
-    set_property target_simulator ModelSim [current_project]
-    set_property top $sim_params(-sim_top) [get_filesets sim_1]
-    set_property top_lib xil_defaultlib [get_filesets sim_1]
-    set_property compxlib.modelsim_compiled_library_dir ${modelsim_lib_path} [current_project]
-    launch_simulation -scripts_only
-}
+# remove BUILD_TIMESTAMP to avoid elaborate.sh error
+set generic [regsub {BUILD_TIMESTAMP=[^\s]*} $generic {}]
+set_property -name generic -value $generic -object [get_filesets sim_1]
+
+set_property top $sim_params(-sim_top) [get_filesets sim_1]
+set_property top_lib xil_defaultlib [get_filesets sim_1]
+
+# remove __synthesis__
+set verilog_define [string map {__synthesis__ ""} $verilog_define]
+# add SIM_SPEED_UP for CMAC
+append verilog_define " " "SIM_SPEED_UP"
+set_property verilog_define $verilog_define [get_filesets sim_1]
+
+set_property include_dirs $include_dirs [get_filesets sim_1]
+set_property -name {xsim.simulate.runtime} -value {200us} -objects [get_filesets sim_1]
+add_files -fileset sim_1 $sim_dir/tb_behav.wcfg
+set_property xsim.view $sim_dir/tb_behav.wcfg [get_filesets sim_1]
+update_compile_order -fileset sim_1
+#launch_simulation -scripts_only
 
 # Implement design
 if {$impl} {

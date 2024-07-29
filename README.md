@@ -1,3 +1,22 @@
+# OpenNIC 10G
+
+- Added 10G Ethernet MAC support
+    - Support [fixstars/xg_mac](https://github.com/fixstars/xg_mac) for MAC.
+- Added top level simulation environment
+- Removed ModelSim support
+- Added lint by verible
+    - See [Lint Rules](https://chipsalliance.github.io/verible/verilog_lint.html#lint-rules) for customizing `.rules.verible_lint`.
+- Support only Alveo U55C
+
+## How to build
+
+```
+git submodule update --init --recursive
+source /tools/Xilinx/Vivado/2022.1/settings64.sh
+make -C third_party/xg_mac/xg_mac
+vivado -mode tcl -source build.tcl -tclargs -board au55c -num_cmac_port 0 -num_xxvmac_port 1 -fixstars_xg_mac 1
+```
+
 # AMD OpenNIC Shell
 
 This is one of the three components of the
