@@ -327,13 +327,13 @@ module qdma_sim (
         h2c_agent.driver.send(h2c_wr_transaction);
     endtask
 
-    task automatic h2c_write_packet();
+    task automatic h2c_write_packet(logic [10:0] qid);
         int size = 100;
         int num_beat = (size + 63) / 64;
         logic [7:0] data;
         for (int i = 0; i < num_beat; i++) begin
             data = i;
-            h2c_write({64{data}}, size, i == num_beat - 1 ? 64 * num_beat - size : 0, 0,
+            h2c_write({64{data}}, size, i == num_beat - 1 ? 64 * num_beat - size : 0, qid,
                       i == num_beat - 1);
         end
     endtask

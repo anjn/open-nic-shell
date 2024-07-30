@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 # *************************************************************************
-set xxv_ethernet xxv_ethernet_0
+set xxv_ethernet xxv_ethernet_4
 create_ip -name xxv_ethernet -vendor xilinx.com -library ip -module_name $xxv_ethernet -dir ${ip_build_dir}
 
 if {$fixstars_xg_mac} {
@@ -29,8 +29,6 @@ if {$fixstars_xg_mac} {
     ] [get_ips $xxv_ethernet]
 }
 
-#set_property CONFIG.NUM_OF_CORES [expr min($num_xxvmac_port, 4)] [get_ips $xxv_ethernet]
-
 set_property -dict [list \
   CONFIG.BASE_R_KR {BASE-R} \
   CONFIG.ENABLE_TX_FLOW_CONTROL_LOGIC {0} \
@@ -42,9 +40,6 @@ set_property -dict [list \
   CONFIG.NUM_OF_CORES {1} \
   CONFIG.GT_DRP_CLK {125} \
   CONFIG.ENABLE_PIPELINE_REG {1} \
-  CONFIG.GT_GROUP_SELECT {Quad_X0Y6} \
-  CONFIG.LANE1_GT_LOC {X0Y24} \
+  CONFIG.GT_GROUP_SELECT {Quad_X0Y7} \
+  CONFIG.LANE1_GT_LOC {X0Y28} \
 ] [get_ips $xxv_ethernet]
-
-# CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp0_refclk0}
-# CONFIG.ETHERNET_BOARD_INTERFACE {qsfp0_4x}

@@ -45,7 +45,8 @@ module tb #(
 
     open_nic_shell #(
         .NUM_CMAC_PORT(NUM_CMAC_PORT),
-        .NUM_XXVMAC_PORT(NUM_XXVMAC_PORT)
+        .NUM_XXVMAC_PORT(NUM_XXVMAC_PORT),
+        .NUM_PHYS_FUNC(NUM_PHYS_FUNC)
     ) dut(
         .*
     );
@@ -119,7 +120,10 @@ module tb #(
 
         #8000;
 
-        `QDMA0.axil_write(32'h1000, 32'h0000_0008); // base queue id, number of queues
+        if (NUM_PHYS_FUNC > 0) `QDMA0.axil_write(32'h1000, 32'h0000_0008); // base queue id, number of queues
+        if (NUM_PHYS_FUNC > 1) `QDMA0.axil_write(32'h2000, 32'h0008_0008); // base queue id, number of queues
+        if (NUM_PHYS_FUNC > 2) `QDMA0.axil_write(32'h3000, 32'h0010_0008); // base queue id, number of queues
+        if (NUM_PHYS_FUNC > 3) `QDMA0.axil_write(32'h4000, 32'h0018_0008); // base queue id, number of queues
 
         #1000;
 
@@ -138,9 +142,10 @@ module tb #(
             #2000;
         end
 
-        #100;
-
-        `QDMA0.h2c_write_packet();
+        if (NUM_PHYS_FUNC > 0) #1us `QDMA0.h2c_write_packet('h00);
+        if (NUM_PHYS_FUNC > 1) #1us `QDMA0.h2c_write_packet('h08);
+        if (NUM_PHYS_FUNC > 2) #1us `QDMA0.h2c_write_packet('h10);
+        if (NUM_PHYS_FUNC > 3) #1us `QDMA0.h2c_write_packet('h18);
 
         #3000;
         $finish;

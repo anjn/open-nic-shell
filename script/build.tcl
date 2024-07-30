@@ -184,8 +184,20 @@ if {$num_cmac_port < 0 && $num_cmac_port > 2} {
     puts "Invalid value for -num_cmac_port: allowed range is \[0, 2\]"
     exit
 }
+if {$num_xxvmac_port < 0 && $num_xxvmac_port > 4} {
+    puts "Invalid value for -num_xxvmac_port: allowed range is \[0, 4\]"
+    exit
+}
 if {$num_cmac_port == 0 && $num_xxvmac_port == 0} {
     puts "Invalid value for -num_cmac_port and -num_xxvmac_port: at least 1 port should be enabled"
+    exit
+}
+if {$num_cmac_port + $num_xxvmac_port > 4} {
+    puts "Invalid value for -num_cmac_port and -num_xxvmac_port: maximum total number of ports should be \[1, 4\]"
+    exit
+}
+if {$num_phys_func != $num_cmac_port + $num_xxvmac_port} {
+    puts "Invalid value for -num_phys_func: should be equal to the total number of ports"
     exit
 }
 
@@ -466,8 +478,8 @@ set_property verilog_define $verilog_define [get_filesets sim_1]
 
 set_property include_dirs $include_dirs [get_filesets sim_1]
 set_property -name {xsim.simulate.runtime} -value {200us} -objects [get_filesets sim_1]
-add_files -fileset sim_1 $sim_dir/tb_behav.wcfg
-set_property xsim.view $sim_dir/tb_behav.wcfg [get_filesets sim_1]
+#add_files -fileset sim_1 $sim_dir/tb_behav.wcfg
+#set_property xsim.view $sim_dir/tb_behav.wcfg [get_filesets sim_1]
 update_compile_order -fileset sim_1
 #launch_simulation -scripts_only
 

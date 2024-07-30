@@ -15,35 +15,32 @@
 # limitations under the License.
 #
 # *************************************************************************
-set cmac_usplus cmac_usplus_1
-create_ip -name cmac_usplus -vendor xilinx.com -library ip -module_name $cmac_usplus -dir ${ip_build_dir}
-set_property -dict { 
-    CONFIG.CMAC_CAUI4_MODE {1}
-    CONFIG.NUM_LANES {4x25}
-    CONFIG.GT_REF_CLK_FREQ {161.1328125}
-    CONFIG.USER_INTERFACE {AXIS}
-    CONFIG.GT_DRP_CLK {125.00}
-    CONFIG.ENABLE_AXI_INTERFACE {1}
-    CONFIG.INCLUDE_STATISTICS_COUNTERS {1}
-    CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y4}
-    CONFIG.GT_GROUP_SELECT {X0Y28~X0Y31}
-    CONFIG.LANE1_GT_LOC {X0Y28}
-    CONFIG.LANE2_GT_LOC {X0Y29}
-    CONFIG.LANE3_GT_LOC {X0Y30}
-    CONFIG.LANE4_GT_LOC {X0Y31}
-    CONFIG.LANE5_GT_LOC {NA}
-    CONFIG.LANE6_GT_LOC {NA}
-    CONFIG.LANE7_GT_LOC {NA}
-    CONFIG.LANE8_GT_LOC {NA}
-    CONFIG.LANE9_GT_LOC {NA}
-    CONFIG.LANE10_GT_LOC {NA}
-    CONFIG.RX_GT_BUFFER {1}
-    CONFIG.GT_RX_BUFFER_BYPASS {0}
-    CONFIG.INS_LOSS_NYQ {20}
-    CONFIG.INCLUDE_RS_FEC {1}
-    CONFIG.ETHERNET_BOARD_INTERFACE {qsfp1_4x}
-    CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp1_refclk0}
-    CONFIG.ENABLE_PIPELINE_REG {1}
-} [get_ips $cmac_usplus]
-set_property CONFIG.RX_MIN_PACKET_LEN $min_pkt_len [get_ips $cmac_usplus]
-set_property CONFIG.RX_MAX_PACKET_LEN $max_pkt_len [get_ips $cmac_usplus]
+set xxv_ethernet xxv_ethernet_1
+create_ip -name xxv_ethernet -vendor xilinx.com -library ip -module_name $xxv_ethernet -dir ${ip_build_dir}
+
+if {$fixstars_xg_mac} {
+    set_property -dict [list \
+      CONFIG.CORE {Ethernet PCS/PMA 64-bit} \
+      CONFIG.DATA_PATH_INTERFACE {MII} \
+    ] [get_ips $xxv_ethernet]
+} else {
+    set_property -dict [list \
+      CONFIG.CORE {Ethernet MAC+PCS/PMA 64-bit} \
+    ] [get_ips $xxv_ethernet]
+}
+
+set_property -dict [list \
+  CONFIG.BASE_R_KR {BASE-R} \
+  CONFIG.ENABLE_TX_FLOW_CONTROL_LOGIC {0} \
+  CONFIG.GT_REF_CLK_FREQ {161.1328125} \
+  CONFIG.INCLUDE_AXI4_INTERFACE {1} \
+  CONFIG.LINE_RATE {10} \
+  CONFIG.RUNTIME_SWITCH {0} \
+  CONFIG.STATISTICS_REGS_TYPE {0} \
+  CONFIG.NUM_OF_CORES {2} \
+  CONFIG.GT_DRP_CLK {125} \
+  CONFIG.ENABLE_PIPELINE_REG {1} \
+  CONFIG.GT_GROUP_SELECT {Quad_X0Y6} \
+  CONFIG.LANE1_GT_LOC {X0Y24} \
+  CONFIG.LANE2_GT_LOC {X0Y25} \
+] [get_ips $xxv_ethernet]
