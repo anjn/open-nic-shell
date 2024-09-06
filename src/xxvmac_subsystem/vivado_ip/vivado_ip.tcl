@@ -22,21 +22,11 @@ set ips {
     xxvmac_subsystem_axis_dwidth_converter_tx
 }
 
-#if {$num_cmac_port == 0 && $num_xxvmac_port == 1} { lappend ips "xxv_ethernet_0" }
-#if {$num_cmac_port == 0 && $num_xxvmac_port == 2} { lappend ips "xxv_ethernet_1" }
-#if {$num_cmac_port == 0 && $num_xxvmac_port == 3} { lappend ips "xxv_ethernet_2" }
-#if {$num_cmac_port == 0 && $num_xxvmac_port == 4} { lappend ips "xxv_ethernet_3" }
-#
-#if {$num_cmac_port == 1 && $num_xxvmac_port == 1} { lappend ips "xxv_ethernet_4" }
-#if {$num_cmac_port == 1 && $num_xxvmac_port == 2} { lappend ips "xxv_ethernet_5" }
-#if {$num_cmac_port == 1 && $num_xxvmac_port == 3} { lappend ips "xxv_ethernet_6" }
+if {$num_cmac_port == 0 && $num_xxvmac_port == 1} { lappend ips "xxv_ethernet_0" }
+if {$num_cmac_port == 0 && $num_xxvmac_port == 2} { lappend ips "xxv_ethernet_1" }
+if {$num_cmac_port == 0 && $num_xxvmac_port == 3} { lappend ips "xxv_ethernet_2" }
+if {$num_cmac_port == 0 && $num_xxvmac_port == 4} { lappend ips "xxv_ethernet_3" }
 
-lappend ips "xxv_ethernet_0"
-lappend ips "xxv_ethernet_1"
-lappend ips "xxv_ethernet_2"
-lappend ips "xxv_ethernet_3"
-
-lappend ips "xxv_ethernet_4"
-lappend ips "xxv_ethernet_5"
-lappend ips "xxv_ethernet_6"
-
+if {$num_cmac_port == 1 && $num_xxvmac_port == 1} { lappend ips "xxv_ethernet_4" }
+if {$num_cmac_port == 1 && $num_xxvmac_port == 2} { lappend ips "xxv_ethernet_5" }
+if {$num_cmac_port == 1 && $num_xxvmac_port == 3} { lappend ips "xxv_ethernet_6" }
