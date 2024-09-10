@@ -392,16 +392,24 @@ foreach freq [list 250mhz 322mhz] {
     set box_plugin ${user_plugin}/${box}
     
     if {![file exists $box_plugin] || ![file exists ${user_plugin}/build_${box}.tcl]} {
-        set box_plugin ${plugin_dir}/p2p/${box}
+        #set box_plugin ${plugin_dir}/p2p/${box}
+        puts "Can't find user plugin!"
+        exit
     }
 
-    source ${box_plugin}/${box}_axi_crossbar.tcl
-    read_verilog -quiet ${box_plugin}/${box}_address_map.v
+    if {[file exists ${box_plugin}/${box}_axi_crossbar.tcl]} {
+        source ${box_plugin}/${box}_axi_crossbar.tcl
+    }
+    if {[file exists ${box_plugin}/${box}_address_map.v]} {
+        read_verilog -quiet ${box_plugin}/${box}_address_map.v
+    }
     lappend include_dirs $box_plugin
 
     if {![file exists ${user_plugin}/build_${box}.tcl]} {
-        cd ${plugin_dir}/p2p
-        source build_${box}.tcl
+        #cd ${plugin_dir}/p2p
+        #source build_${box}.tcl
+        puts "Can't find user plugin!"
+        exit
     } else {
         cd $user_plugin
         source build_${box}.tcl
