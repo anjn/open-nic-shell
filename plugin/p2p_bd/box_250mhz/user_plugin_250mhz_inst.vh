@@ -45,7 +45,7 @@ generic_reset #(
   .rstn         ({axis_aresetn, axil_aresetn})
 );
 
-box_250mhz_bd_wrapper (
+box_250mhz_bd_wrapper box_250mhz_bd_inst (
     .axil_aclk,
     .axil_aresetn,
     .axis_aclk,
@@ -73,7 +73,7 @@ box_250mhz_bd_wrapper (
     .s_axis_qdma_h2c_tkeep,
     .s_axis_qdma_h2c_tlast,
     .s_axis_qdma_h2c_tready,
-    .s_axis_qdma_h2c_tuser({s_axis_qdma_h2c_tuser_size, s_axis_qdma_h2c_tuser_src, s_axis_qdma_h2c_tuser_dst}),
+    .s_axis_qdma_h2c_tuser({s_axis_qdma_h2c_tuser_size, s_axis_qdma_h2c_tuser_src, 16'h0040}),
     .s_axis_qdma_h2c_tvalid,
 
     .m_axis_qdma_c2h_tdata,
@@ -94,7 +94,7 @@ box_250mhz_bd_wrapper (
     .s_axis_adap_rx_250mhz_tkeep,
     .s_axis_adap_rx_250mhz_tlast,
     .s_axis_adap_rx_250mhz_tready,
-    .s_axis_adap_rx_250mhz_tuser({s_axis_adap_rx_250mhz_tuser_size, s_axis_adap_rx_250mhz_tuser_src, s_axis_adap_rx_250mhz_tuser_dst}),
+    .s_axis_adap_rx_250mhz_tuser({s_axis_adap_rx_250mhz_tuser_size, s_axis_adap_rx_250mhz_tuser_src, 16'h0001}),
     .s_axis_adap_rx_250mhz_tvalid
 );
 

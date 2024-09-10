@@ -54,7 +54,7 @@ set design_name box_250mhz_bd
 
 # If you do not already have an existing IP Integrator design open,
 # you can create a design using the following command:
-create_bd_design $design_name
+#    create_bd_design $design_name
 
 # Creating design if needed
 set errMsg ""
@@ -260,8 +260,11 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.POLARITY {ACTIVE_LOW} \
  ] $axil_aresetn
-  set axis_aclk [ create_bd_port -dir I -type rst axis_aclk ]
-  set axis_aresetn [ create_bd_port -dir I -type clk axis_aresetn ]
+  set axis_aclk [ create_bd_port -dir I -type clk axis_aclk ]
+  set_property -dict [ list \
+   CONFIG.ASSOCIATED_RESET {axis_aresetn} \
+ ] $axis_aclk
+  set axis_aresetn [ create_bd_port -dir I -type rst axis_aresetn ]
 
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
@@ -302,8 +305,8 @@ proc create_root_design { parentCell } {
   # Create port connections
   connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports axil_aclk] [get_bd_pins axi_gpio_0/s_axi_aclk]
   connect_bd_net -net s_axi_aresetn_0_1 [get_bd_ports axil_aresetn] [get_bd_pins axi_gpio_0/s_axi_aresetn]
-  connect_bd_net -net s_axis_aclk_1_1 [get_bd_ports axis_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins axis_data_fifo_1/s_axis_aclk]
-  connect_bd_net -net s_axis_aresetn_0_1 [get_bd_ports axis_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins axis_data_fifo_1/s_axis_aresetn]
+  connect_bd_net -net s_axis_aclk_1_1 [get_bd_ports axis_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins axis_data_fifo_1/s_axis_aclk]
+  connect_bd_net -net s_axis_aresetn_0_1 [get_bd_ports axis_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins axis_data_fifo_1/s_axis_aresetn]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces s_axil] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force

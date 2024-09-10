@@ -69,17 +69,18 @@ module tb #(
         `QDMA0.init_axil_agent();
         `QDMA0.init_h2c_agent();
 
+        // PCIe reset
         pcie_rstn = '0;
-
         #500;
         pcie_rstn = '1;
 
+        // reset from host
         #500;
         `QDMA0.axil_write(32'h0004, 32'hffff_ffff); // system reset
         `QDMA0.axil_write(32'h000c, 32'hffff_ffff); // shell reset
         `QDMA0.axil_write(32'h0014, 32'hffff_ffff); // user reset
 
-        // wait system reset done
+        // wait reset done
         do begin
             `QDMA0.axil_read(32'h0008);
         end while (`QDMA0.axil_read_data == 0);
@@ -91,15 +92,18 @@ module tb #(
         end while (`QDMA0.axil_read_data == 0);
 
         #500;
+        // ????
         `QDMA0.axil_read(32'h8024);
 
         if (NUM_XXVMAC_PORT > 0) begin
+            // Initialize XXVMAC
             `QDMA0.axil_write(32'h8008, 32'hc000_0000); // MODE_REG
             `QDMA0.axil_write(32'h8014, 32'h0000_0000); // CONFIGURATION_RX_REG1
             `QDMA0.axil_write(32'h800c, 32'h0000_0000); // CONFIGURATION_TX_REG1
             `QDMA0.axil_write(32'h8000, 32'h0000_0001); // GT_RESET_REG
             `QDMA0.axil_write(32'h8000, 32'h0000_0000); // GT_RESET_REG
         end else begin
+            // Initialize CMAC
             // https://docs.amd.com/r/en-US/pg203-cmac-usplus/With-AXI4-Lite-Interface
             `QDMA0.axil_write(32'h8014, 32'h0000_0001); // [CONFIGURATION_RX_REG1 for ctl_rx_enable]
             `QDMA0.axil_write(32'h800c, 32'h0000_0010); // [CONFIGURATION_TX_REG1 for ctl_tx_send_rfi]
@@ -120,6 +124,7 @@ module tb #(
 
         #8000;
 
+        // Queue settings
         if (NUM_PHYS_FUNC > 0) `QDMA0.axil_write(32'h1000, 32'h0000_0008); // base queue id, number of queues
         if (NUM_PHYS_FUNC > 1) `QDMA0.axil_write(32'h2000, 32'h0008_0008); // base queue id, number of queues
         if (NUM_PHYS_FUNC > 2) `QDMA0.axil_write(32'h3000, 32'h0010_0008); // base queue id, number of queues
@@ -128,10 +133,12 @@ module tb #(
         #1000;
 
         if (NUM_XXVMAC_PORT > 0) begin
+            // Wait link up
             do begin
                 `QDMA0.axil_read(32'h840c); // STAT_RX_BLOCK_LOCK_REG: 040C
             end while (`QDMA0.axil_read_data == 0);
         end else begin
+            // Wait link up
             #20us;
             do begin
                 # 2us;
@@ -142,6 +149,7 @@ module tb #(
             #2000;
         end
 
+        // Send packet from host
         if (NUM_PHYS_FUNC > 0) #1us `QDMA0.h2c_write_packet('h00);
         if (NUM_PHYS_FUNC > 1) #1us `QDMA0.h2c_write_packet('h08);
         if (NUM_PHYS_FUNC > 2) #1us `QDMA0.h2c_write_packet('h10);
