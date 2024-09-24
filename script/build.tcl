@@ -196,10 +196,10 @@ if {$num_cmac_port + $num_xxvmac_port > 4} {
     puts "Invalid value for -num_cmac_port and -num_xxvmac_port: maximum total number of ports should be \[1, 4\]"
     exit
 }
-if {$num_phys_func != $num_cmac_port + $num_xxvmac_port} {
-    puts "Invalid value for -num_phys_func: should be equal to the total number of ports"
-    exit
-}
+#if {$num_phys_func != $num_cmac_port + $num_xxvmac_port} {
+#    puts "Invalid value for -num_phys_func: should be equal to the total number of ports"
+#    exit
+#}
 
 source ${script_dir}/board_settings/${board}.tcl
 

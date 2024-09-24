@@ -15,7 +15,7 @@ git submodule update --init --recursive
 source /tools/Xilinx/Vivado/2022.1/settings64.sh
 make -C third_party/xg_mac/xg_mac
 cd script
-vivado -mode tcl -source build.tcl -tclargs -board au55c -num_cmac_port 0 -num_xxvmac_port 1 -fixstars_xg_mac 1 -user_plugin plugin/p2p_bd
+vivado -mode tcl -source build.tcl -tclargs -board au55c -num_phys_func 2 -num_cmac_port 0 -num_xxvmac_port 1 -fixstars_xg_mac 1 -user_plugin ../plugin/p2p_bd_p4
 ```
 
 # AMD OpenNIC Shell
