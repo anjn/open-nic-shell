@@ -49,6 +49,22 @@ generic_reset #(
   .rstn         ({axis_aresetn, axil_aresetn})
 );
 
+wire [63:0] axis_qdma_c2h_0_tuser;
+wire [63:0] axis_qdma_c2h_1_tuser;
+wire [63:0] axis_adap_tx_250mhz_tuser;
+
+assign m_axis_qdma_c2h_tuser_dst[`getvec(16, 0)] = 16'h0001;
+assign m_axis_qdma_c2h_tuser_src[`getvec(16, 0)] = axis_qdma_c2h_0_tuser[15:0];
+assign m_axis_qdma_c2h_tuser_size[`getvec(16, 0)] = axis_qdma_c2h_0_tuser[31:16];
+
+assign m_axis_qdma_c2h_tuser_dst[`getvec(16, 1)] = 16'h0002;
+assign m_axis_qdma_c2h_tuser_src[`getvec(16, 1)] = axis_qdma_c2h_1_tuser[15:0];
+assign m_axis_qdma_c2h_tuser_size[`getvec(16, 1)] = axis_qdma_c2h_1_tuser[31:16];
+
+assign m_axis_adap_tx_250mhz_tuser_dst = 16'h0040;
+assign m_axis_adap_tx_250mhz_tuser_src = axis_adap_tx_250mhz_tuser[15:0];
+assign m_axis_adap_tx_250mhz_tuser_size = axis_adap_tx_250mhz_tuser[31:16];
+
 box_250mhz_bd_wrapper box_250mhz_bd_inst (
     .axil_aclk,
     .axil_aresetn,
@@ -78,24 +94,21 @@ box_250mhz_bd_wrapper box_250mhz_bd_inst (
     .s_axis_qdma_h2c_0_tkeep(s_axis_qdma_h2c_tkeep[`getvec(64, 0)]),
     .s_axis_qdma_h2c_0_tlast(s_axis_qdma_h2c_tlast[0]),
     .s_axis_qdma_h2c_0_tready(s_axis_qdma_h2c_tready[0]),
-    .s_axis_qdma_h2c_0_tuser({s_axis_qdma_h2c_tuser_size[`getvec(16, 0)], s_axis_qdma_h2c_tuser_src[`getvec(16, 0)], 16'h0040}),
-    .s_axis_qdma_h2c_0_tdest(2'd2),
+    .s_axis_qdma_h2c_0_tuser({16'd0, 16'd2, 16'd1, s_axis_qdma_h2c_tuser_src[`getvec(16, 0)]}), // Port1 -> Port2
     .s_axis_qdma_h2c_0_tvalid(s_axis_qdma_h2c_tvalid[0]),
 
     .s_axis_qdma_h2c_1_tdata(s_axis_qdma_h2c_tdata[`getvec(512, 1)]),
     .s_axis_qdma_h2c_1_tkeep(s_axis_qdma_h2c_tkeep[`getvec(64, 1)]),
     .s_axis_qdma_h2c_1_tlast(s_axis_qdma_h2c_tlast[1]),
     .s_axis_qdma_h2c_1_tready(s_axis_qdma_h2c_tready[1]),
-    .s_axis_qdma_h2c_1_tuser({s_axis_qdma_h2c_tuser_size[`getvec(16, 1)], s_axis_qdma_h2c_tuser_src[`getvec(16, 1)], 16'h0040}),
-    .s_axis_qdma_h2c_1_tdest(2'd1),
+    .s_axis_qdma_h2c_1_tuser({16'd0, 16'd255, 16'd255, s_axis_qdma_h2c_tuser_src[`getvec(16, 1)]}),
     .s_axis_qdma_h2c_1_tvalid(s_axis_qdma_h2c_tvalid[1]),
 
     .s_axis_adap_rx_250mhz_tdata,
     .s_axis_adap_rx_250mhz_tkeep,
     .s_axis_adap_rx_250mhz_tlast,
     .s_axis_adap_rx_250mhz_tready,
-    .s_axis_adap_rx_250mhz_tuser({s_axis_adap_rx_250mhz_tuser_size, s_axis_adap_rx_250mhz_tuser_src, 16'h0001}),
-    .s_axis_adap_rx_250mhz_tdest(2'd0),
+    .s_axis_adap_rx_250mhz_tuser({16'd0, 16'd1, 16'd2, s_axis_adap_rx_250mhz_tuser_src}),
     .s_axis_adap_rx_250mhz_tvalid,
 
     // Outputs
@@ -103,24 +116,21 @@ box_250mhz_bd_wrapper box_250mhz_bd_inst (
     .m_axis_qdma_c2h_0_tkeep(m_axis_qdma_c2h_tkeep[`getvec(64, 0)]),
     .m_axis_qdma_c2h_0_tlast(m_axis_qdma_c2h_tlast[0]),
     .m_axis_qdma_c2h_0_tready(m_axis_qdma_c2h_tready[0]),
-    .m_axis_qdma_c2h_0_tuser({m_axis_qdma_c2h_tuser_size[`getvec(16, 0)], m_axis_qdma_c2h_tuser_src[`getvec(16, 0)], m_axis_qdma_c2h_tuser_dst[`getvec(16, 0)]}),
-    //.m_axis_qdma_c2h_0_tdest(),
+    .m_axis_qdma_c2h_0_tuser(axis_qdma_c2h_0_tuser),
     .m_axis_qdma_c2h_0_tvalid(m_axis_qdma_c2h_tvalid[0]),
 
     .m_axis_qdma_c2h_1_tdata(m_axis_qdma_c2h_tdata[`getvec(512, 1)]),
     .m_axis_qdma_c2h_1_tkeep(m_axis_qdma_c2h_tkeep[`getvec(64, 1)]),
     .m_axis_qdma_c2h_1_tlast(m_axis_qdma_c2h_tlast[1]),
     .m_axis_qdma_c2h_1_tready(m_axis_qdma_c2h_tready[1]),
-    .m_axis_qdma_c2h_1_tuser({m_axis_qdma_c2h_tuser_size[`getvec(16, 1)], m_axis_qdma_c2h_tuser_src[`getvec(16, 1)], m_axis_qdma_c2h_tuser_dst[`getvec(16, 1)]}),
-    //.m_axis_qdma_c2h_1_tdest(),
+    .m_axis_qdma_c2h_1_tuser(axis_qdma_c2h_1_tuser),
     .m_axis_qdma_c2h_1_tvalid(m_axis_qdma_c2h_tvalid[1]),
 
     .m_axis_adap_tx_250mhz_tdata,
     .m_axis_adap_tx_250mhz_tkeep,
     .m_axis_adap_tx_250mhz_tlast,
     .m_axis_adap_tx_250mhz_tready,
-    .m_axis_adap_tx_250mhz_tuser({m_axis_adap_tx_250mhz_tuser_size, m_axis_adap_tx_250mhz_tuser_src, m_axis_adap_tx_250mhz_tuser_dst}),
-    //.m_axis_adap_tx_250mhz_tdest(),
+    .m_axis_adap_tx_250mhz_tuser(axis_adap_tx_250mhz_tuser),
     .m_axis_adap_tx_250mhz_tvalid
 );
 
