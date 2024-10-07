@@ -1,4 +1,4 @@
-# OpenNIC 10G
+# OpenNIC P4
 
 - Added 10G Ethernet MAC support
     - Support [fixstars/xg_mac](https://github.com/fixstars/xg_mac) for MAC.
