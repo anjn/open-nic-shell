@@ -1,0 +1,13 @@
+#
+# An unexpected error has occurred (7)
+#
+Stack:
+/tools/Xilinx/Vivado/2022.1/tps/lnx64/jre11.0.11_9/lib//server/libjvm.so(+0xbefecb) [0x7ae92fdefecb]
+/tools/Xilinx/Vivado/2022.1/tps/lnx64/jre11.0.11_9/lib//server/libjvm.so(JVM_handle_linux_signal+0xd1) [0x7ae92fdf6c81]
+/tools/Xilinx/Vivado/2022.1/tps/lnx64/jre11.0.11_9/lib//server/libjvm.so(+0xbead23) [0x7ae92fdead23]
+/mnt/nfs/tools/Xilinx/Vivado/2022.1/tps/lnx64/javafx-sdk-11.0.2/lib/libjfxwebkit.so(+0x205ae18) [0x7ae8f1329e18]
+/lib/x86_64-linux-gnu/libc.so.6(+0x42520) [0x7ae990a42520]
+/tools/Xilinx/Vivado/2022.1/lib/lnx64.o/librdi_filemgmt.so(HDDAFilteredSrcIter::getNext_()+0x74) [0x7ae957eba084]
+/tools/Xilinx/Vivado/2022.1/lib/lnx64.o/librdi_filemgmt.so(HDDAFilteredSrcIter::next()+0x11) [0x7ae957eba621]
+/tools/Xilinx/Vivado/2022.1/lib/lnx64.o/librdi_filemgmt.so(Java_ui_data_design_dai_SrcFileIter_1next+0x54) [0x7ae957f64f34]
+[0x7ae91eeb3984]

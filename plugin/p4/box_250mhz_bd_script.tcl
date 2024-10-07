@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# box_250mhz_buffer
+# box_250mhz_p4_dummy, box_250mhz_p4_in, box_250mhz_p4_out
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -135,9 +135,7 @@ xilinx.com:ip:axi_gpio:2.0\
 xilinx.com:ip:axis_data_fifo:2.0\
 xilinx.com:ip:axis_dwidth_converter:1.1\
 xilinx.com:ip:axis_switch:1.1\
-xilinx.com:ip:xlconcat:2.1\
 xilinx.com:ip:xlconstant:1.1\
-xilinx.com:ip:xlslice:1.0\
 "
 
    set list_ips_missing ""
@@ -163,7 +161,9 @@ xilinx.com:ip:xlslice:1.0\
 set bCheckModules 1
 if { $bCheckModules == 1 } {
    set list_check_mods "\ 
-box_250mhz_buffer\
+box_250mhz_p4_dummy\
+box_250mhz_p4_in\
+box_250mhz_p4_out\
 "
 
    set list_mods_missing ""
@@ -361,13 +361,6 @@ proc create_root_design { parentCell } {
    CONFIG.TDEST_WIDTH {0} \
  ] $axis_data_fifo_5
 
-  # Create instance: axis_data_fifo_dummy, and set properties
-  set axis_data_fifo_dummy [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 axis_data_fifo_dummy ]
-  set_property -dict [ list \
-   CONFIG.FIFO_DEPTH {64} \
-   CONFIG.TUSER_WIDTH {1088} \
- ] $axis_data_fifo_dummy
-
   # Create instance: axis_dwidth_converter_0, and set properties
   set axis_dwidth_converter_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_dwidth_converter:1.1 axis_dwidth_converter_0 ]
   set_property -dict [ list \
@@ -446,49 +439,45 @@ proc create_root_design { parentCell } {
    CONFIG.NUM_SI {1} \
  ] $axis_switch_1
 
-  # Create instance: box_250mhz_buffer_0, and set properties
-  set block_name box_250mhz_buffer
-  set block_cell_name box_250mhz_buffer_0
-  if { [catch {set box_250mhz_buffer_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+  # Create instance: box_250mhz_p4_dummy_0, and set properties
+  set block_name box_250mhz_p4_dummy
+  set block_cell_name box_250mhz_p4_dummy_0
+  if { [catch {set box_250mhz_p4_dummy_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
      catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
-   } elseif { $box_250mhz_buffer_0 eq "" } {
+   } elseif { $box_250mhz_p4_dummy_0 eq "" } {
      catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
   
-  # Create instance: xlconcat_0, and set properties
-  set xlconcat_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_0 ]
-
+  # Create instance: box_250mhz_p4_in_0, and set properties
+  set block_name box_250mhz_p4_in
+  set block_cell_name box_250mhz_p4_in_0
+  if { [catch {set box_250mhz_p4_in_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $box_250mhz_p4_in_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: box_250mhz_p4_out_0, and set properties
+  set block_name box_250mhz_p4_out
+  set block_cell_name box_250mhz_p4_out_0
+  if { [catch {set box_250mhz_p4_out_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $box_250mhz_p4_out_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
   # Create instance: xlconstant_0, and set properties
   set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
   set_property -dict [ list \
    CONFIG.CONST_VAL {0} \
    CONFIG.CONST_WIDTH {3} \
  ] $xlconstant_0
-
-  # Create instance: xlconstant_1, and set properties
-  set xlconstant_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_1 ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {0} \
-   CONFIG.CONST_WIDTH {1024} \
- ] $xlconstant_1
-
-  # Create instance: xlslice_0, and set properties
-  set xlslice_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 xlslice_0 ]
-  set_property -dict [ list \
-   CONFIG.DIN_FROM {63} \
-   CONFIG.DIN_WIDTH {1088} \
-   CONFIG.DOUT_WIDTH {64} \
- ] $xlslice_0
-
-  # Create instance: xlslice_1, and set properties
-  set xlslice_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 xlslice_1 ]
-  set_property -dict [ list \
-   CONFIG.DIN_FROM {63} \
-   CONFIG.DIN_WIDTH {128} \
-   CONFIG.DOUT_WIDTH {64} \
- ] $xlslice_1
 
   # Create interface connections
   connect_bd_intf_net -intf_net S_AXI_0_1 [get_bd_intf_ports s_axil] [get_bd_intf_pins axi_gpio_0/S_AXI]
@@ -498,34 +487,33 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net axis_data_fifo_3_M_AXIS [get_bd_intf_pins axis_data_fifo_3/M_AXIS] [get_bd_intf_pins axis_dwidth_converter_3/S_AXIS]
   connect_bd_intf_net -intf_net axis_data_fifo_4_M_AXIS [get_bd_intf_pins axis_data_fifo_4/M_AXIS] [get_bd_intf_pins axis_dwidth_converter_4/S_AXIS]
   connect_bd_intf_net -intf_net axis_data_fifo_5_M_AXIS [get_bd_intf_pins axis_data_fifo_5/M_AXIS] [get_bd_intf_pins axis_dwidth_converter_5/S_AXIS]
-  connect_bd_intf_net -intf_net axis_data_fifo_dummy_M_AXIS [get_bd_intf_pins axis_data_fifo_dummy/M_AXIS] [get_bd_intf_pins box_250mhz_buffer_0/s_axis]
   connect_bd_intf_net -intf_net axis_dwidth_converter_0_M_AXIS [get_bd_intf_pins axis_data_fifo_0/S_AXIS] [get_bd_intf_pins axis_dwidth_converter_0/M_AXIS]
   connect_bd_intf_net -intf_net axis_dwidth_converter_1_M_AXIS [get_bd_intf_pins axis_data_fifo_1/S_AXIS] [get_bd_intf_pins axis_dwidth_converter_1/M_AXIS]
   connect_bd_intf_net -intf_net axis_dwidth_converter_2_M_AXIS [get_bd_intf_pins axis_data_fifo_2/S_AXIS] [get_bd_intf_pins axis_dwidth_converter_2/M_AXIS]
   connect_bd_intf_net -intf_net axis_dwidth_converter_3_M_AXIS [get_bd_intf_ports m_axis_qdma_c2h_0] [get_bd_intf_pins axis_dwidth_converter_3/M_AXIS]
   connect_bd_intf_net -intf_net axis_dwidth_converter_4_M_AXIS [get_bd_intf_ports m_axis_qdma_c2h_1] [get_bd_intf_pins axis_dwidth_converter_4/M_AXIS]
   connect_bd_intf_net -intf_net axis_dwidth_converter_5_M_AXIS [get_bd_intf_ports m_axis_adap_tx_250mhz] [get_bd_intf_pins axis_dwidth_converter_5/M_AXIS]
-  connect_bd_intf_net -intf_net axis_switch_0_M00_AXIS [get_bd_intf_pins axis_data_fifo_dummy/S_AXIS] [get_bd_intf_pins axis_switch_0/M00_AXIS]
+  connect_bd_intf_net -intf_net axis_switch_0_M00_AXIS [get_bd_intf_pins axis_switch_0/M00_AXIS] [get_bd_intf_pins box_250mhz_p4_in_0/s_axis]
   connect_bd_intf_net -intf_net axis_switch_1_M00_AXIS [get_bd_intf_pins axis_data_fifo_3/S_AXIS] [get_bd_intf_pins axis_switch_1/M00_AXIS]
   connect_bd_intf_net -intf_net axis_switch_1_M01_AXIS [get_bd_intf_pins axis_data_fifo_4/S_AXIS] [get_bd_intf_pins axis_switch_1/M01_AXIS]
   connect_bd_intf_net -intf_net axis_switch_1_M02_AXIS [get_bd_intf_pins axis_data_fifo_5/S_AXIS] [get_bd_intf_pins axis_switch_1/M02_AXIS]
-  connect_bd_intf_net -intf_net box_250mhz_buffer_0_m_axis [get_bd_intf_pins axis_switch_1/S00_AXIS] [get_bd_intf_pins box_250mhz_buffer_0/m_axis]
+  connect_bd_intf_net -intf_net box_250mhz_p4_dummy_0_m_axis [get_bd_intf_pins box_250mhz_p4_dummy_0/m_axis] [get_bd_intf_pins box_250mhz_p4_out_0/s_axis]
+  connect_bd_intf_net -intf_net box_250mhz_p4_in_0_m_axis [get_bd_intf_pins box_250mhz_p4_dummy_0/s_axis] [get_bd_intf_pins box_250mhz_p4_in_0/m_axis]
+  connect_bd_intf_net -intf_net box_250mhz_p4_out_0_m_axis [get_bd_intf_pins axis_switch_1/S00_AXIS] [get_bd_intf_pins box_250mhz_p4_out_0/m_axis]
   connect_bd_intf_net -intf_net s_axis_adap_rx_250mhz_1 [get_bd_intf_ports s_axis_adap_rx_250mhz] [get_bd_intf_pins axis_dwidth_converter_2/S_AXIS]
   connect_bd_intf_net -intf_net s_axis_qdma_h2c_0_1 [get_bd_intf_ports s_axis_qdma_h2c_0] [get_bd_intf_pins axis_dwidth_converter_0/S_AXIS]
   connect_bd_intf_net -intf_net s_axis_qdma_h2c_1_1 [get_bd_intf_ports s_axis_qdma_h2c_1] [get_bd_intf_pins axis_dwidth_converter_1/S_AXIS]
 
   # Create port connections
   connect_bd_net -net axil_aresetn_1 [get_bd_ports axil_aresetn] [get_bd_pins axi_gpio_0/s_axi_aresetn]
-  connect_bd_net -net axis_data_fifo_dummy_m_axis_tuser [get_bd_pins axis_data_fifo_dummy/m_axis_tuser] [get_bd_pins xlslice_0/Din]
-  connect_bd_net -net axis_switch_0_m_axis_tuser [get_bd_pins axis_switch_0/m_axis_tuser] [get_bd_pins xlslice_1/Din]
+  connect_bd_net -net box_250mhz_p4_dummy_0_user_metadata_out [get_bd_pins box_250mhz_p4_dummy_0/user_metadata_out] [get_bd_pins box_250mhz_p4_out_0/user_metadata_out]
+  connect_bd_net -net box_250mhz_p4_dummy_0_user_metadata_out_valid [get_bd_pins box_250mhz_p4_dummy_0/user_metadata_out_valid] [get_bd_pins box_250mhz_p4_out_0/user_metadata_out_valid]
+  connect_bd_net -net box_250mhz_p4_in_0_user_metadata_in [get_bd_pins box_250mhz_p4_dummy_0/user_metadata_in] [get_bd_pins box_250mhz_p4_in_0/user_metadata_in]
+  connect_bd_net -net box_250mhz_p4_in_0_user_metadata_in_valid [get_bd_pins box_250mhz_p4_dummy_0/user_metadata_in_valid] [get_bd_pins box_250mhz_p4_in_0/user_metadata_in_valid]
   connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports axil_aclk] [get_bd_pins axi_gpio_0/s_axi_aclk]
-  connect_bd_net -net s_axis_aclk_1_1 [get_bd_ports axis_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins axis_data_fifo_1/s_axis_aclk] [get_bd_pins axis_data_fifo_2/s_axis_aclk] [get_bd_pins axis_data_fifo_3/s_axis_aclk] [get_bd_pins axis_data_fifo_4/s_axis_aclk] [get_bd_pins axis_data_fifo_5/s_axis_aclk] [get_bd_pins axis_data_fifo_dummy/s_axis_aclk] [get_bd_pins axis_dwidth_converter_0/aclk] [get_bd_pins axis_dwidth_converter_1/aclk] [get_bd_pins axis_dwidth_converter_2/aclk] [get_bd_pins axis_dwidth_converter_3/aclk] [get_bd_pins axis_dwidth_converter_4/aclk] [get_bd_pins axis_dwidth_converter_5/aclk] [get_bd_pins axis_switch_0/aclk] [get_bd_pins axis_switch_1/aclk] [get_bd_pins box_250mhz_buffer_0/aclk]
-  connect_bd_net -net s_axis_aresetn_0_1 [get_bd_ports axis_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins axis_data_fifo_1/s_axis_aresetn] [get_bd_pins axis_data_fifo_2/s_axis_aresetn] [get_bd_pins axis_data_fifo_3/s_axis_aresetn] [get_bd_pins axis_data_fifo_4/s_axis_aresetn] [get_bd_pins axis_data_fifo_5/s_axis_aresetn] [get_bd_pins axis_data_fifo_dummy/s_axis_aresetn] [get_bd_pins axis_dwidth_converter_0/aresetn] [get_bd_pins axis_dwidth_converter_1/aresetn] [get_bd_pins axis_dwidth_converter_2/aresetn] [get_bd_pins axis_dwidth_converter_3/aresetn] [get_bd_pins axis_dwidth_converter_4/aresetn] [get_bd_pins axis_dwidth_converter_5/aresetn] [get_bd_pins axis_switch_0/aresetn] [get_bd_pins axis_switch_1/aresetn] [get_bd_pins box_250mhz_buffer_0/aresetn]
-  connect_bd_net -net xlconcat_0_dout [get_bd_pins axis_data_fifo_dummy/s_axis_tuser] [get_bd_pins xlconcat_0/dout]
+  connect_bd_net -net s_axis_aclk_1_1 [get_bd_ports axis_aclk] [get_bd_pins axis_data_fifo_0/s_axis_aclk] [get_bd_pins axis_data_fifo_1/s_axis_aclk] [get_bd_pins axis_data_fifo_2/s_axis_aclk] [get_bd_pins axis_data_fifo_3/s_axis_aclk] [get_bd_pins axis_data_fifo_4/s_axis_aclk] [get_bd_pins axis_data_fifo_5/s_axis_aclk] [get_bd_pins axis_dwidth_converter_0/aclk] [get_bd_pins axis_dwidth_converter_1/aclk] [get_bd_pins axis_dwidth_converter_2/aclk] [get_bd_pins axis_dwidth_converter_3/aclk] [get_bd_pins axis_dwidth_converter_4/aclk] [get_bd_pins axis_dwidth_converter_5/aclk] [get_bd_pins axis_switch_0/aclk] [get_bd_pins axis_switch_1/aclk] [get_bd_pins box_250mhz_p4_dummy_0/aclk] [get_bd_pins box_250mhz_p4_in_0/aclk] [get_bd_pins box_250mhz_p4_out_0/aclk]
+  connect_bd_net -net s_axis_aresetn_0_1 [get_bd_ports axis_aresetn] [get_bd_pins axis_data_fifo_0/s_axis_aresetn] [get_bd_pins axis_data_fifo_1/s_axis_aresetn] [get_bd_pins axis_data_fifo_2/s_axis_aresetn] [get_bd_pins axis_data_fifo_3/s_axis_aresetn] [get_bd_pins axis_data_fifo_4/s_axis_aresetn] [get_bd_pins axis_data_fifo_5/s_axis_aresetn] [get_bd_pins axis_dwidth_converter_0/aresetn] [get_bd_pins axis_dwidth_converter_1/aresetn] [get_bd_pins axis_dwidth_converter_2/aresetn] [get_bd_pins axis_dwidth_converter_3/aresetn] [get_bd_pins axis_dwidth_converter_4/aresetn] [get_bd_pins axis_dwidth_converter_5/aresetn] [get_bd_pins axis_switch_0/aresetn] [get_bd_pins axis_switch_1/aresetn] [get_bd_pins box_250mhz_p4_dummy_0/aresetn] [get_bd_pins box_250mhz_p4_in_0/aresetn] [get_bd_pins box_250mhz_p4_out_0/aresetn]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins axis_switch_0/s_req_suppress] [get_bd_pins xlconstant_0/dout]
-  connect_bd_net -net xlconstant_2_dout [get_bd_pins xlconcat_0/In1] [get_bd_pins xlconstant_1/dout]
-  connect_bd_net -net xlslice_0_Dout [get_bd_pins box_250mhz_buffer_0/s_axis_tuser] [get_bd_pins xlslice_0/Dout]
-  connect_bd_net -net xlslice_1_Dout [get_bd_pins xlconcat_0/In0] [get_bd_pins xlslice_1/Dout]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces s_axil] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force

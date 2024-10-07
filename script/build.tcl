@@ -105,6 +105,7 @@ array set build_options {
     -impl        0
     -post_impl   0
     -user_plugin ""
+    -p4_code     ""
     -bitstream_userid  "0xDEADC0DE"
     -bitstream_usr_access "0x66669999"
     -sim  0
@@ -383,6 +384,11 @@ set_property verilog_define $verilog_define [current_fileset]
 # - Some IPs are board-specific and will be ignored for other board targets
 dict for {ip ip_dir} $ip_dict {
     read_ip -quiet ${ip_dir}/${ip}.xci
+}
+
+# Set absolute path to P4 code
+if {[file exists $p4_code]} {
+    set p4_code [file normalize $p4_code]
 }
 
 # Read user plugin files
