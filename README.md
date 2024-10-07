@@ -17,10 +17,10 @@ make -C third_party/xg_mac/xg_mac
 cd script
 
 # For 10G, U55C
-vivado -mode tcl -source build.tcl -tclargs -board au55c -num_phys_func 2 -num_cmac_port 0 -num_xxvmac_port 1 -fixstars_xg_mac 1 -user_plugin ../plugin/p4 -p4_code ../plugin/p4/example.p4
+vivado -mode tcl -source build.tcl -tclargs -impl 1 -board au55c -num_phys_func 2 -num_cmac_port 0 -num_xxvmac_port 1 -fixstars_xg_mac 1 -user_plugin ../plugin/p4 -p4_code ../plugin/p4/example.p4
 
 # For 100G, U50
-vivado -mode tcl -source build.tcl -tclargs -board au50 -num_phys_func 2 -num_cmac_port 1 -num_xxvmac_port 0 -user_plugin ../plugin/p4 -p4_code ../plugin/p4/example.p4
+vivado -mode tcl -source build.tcl -tclargs -impl 1 -board au50 -num_phys_func 2 -num_cmac_port 1 -num_xxvmac_port 0 -user_plugin ../plugin/p4 -p4_code ../plugin/p4/example.p4
 ```
 
 # AMD OpenNIC Shell
